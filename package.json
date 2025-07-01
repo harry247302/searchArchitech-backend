@@ -1,0 +1,19 @@
+{
+  "name": "search-architech-backend",
+  "version": "1.0.0",
+  "description": "Search Architect is an online platform that intends to bring the topmost architects and people searching for such architects under one roof.",
+  "keywords": [
+    "e-commerce",
+    "nextjs"
+  ],
+  "license": "ISC",
+  "author": "shadab",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
