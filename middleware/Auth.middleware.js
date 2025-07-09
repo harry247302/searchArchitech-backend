@@ -11,8 +11,7 @@ const protect = asyncHandler(async(req,res,next)=>{
             console.log(process.env.JWT_SECRET,"---------------------------------------------------------------------");
             
             const decode = jwt.verify(token,process.env.JWT_SECRET);
-            const userId = decode.userId;
-            
+            const userId = decode.userId;            
             const result = await client(
                 `SELECT id, first_name, last_name, email, category, phone_number, profile_url, company_name
                 FROM users WHERE id = $1`,
@@ -22,17 +21,15 @@ const protect = asyncHandler(async(req,res,next)=>{
                 res.status(401);
                 throw new ('User not found')
             }
-
             req.user = rows[0]
             next();
-
         } catch (error) {
             console.log(error)
             res.status(401);
             throw new error('No authrization')
         }
     }
-
 })
 
-export {protect}
+
+module.exports = { protect };

@@ -1,6 +1,6 @@
-import jwt from 'jsonwebtoken';
+const jwt  = require('jsonwebtoken') ;
 const bcrypt = require('bcrypt');
-const { Pool } = require('pg');
+// const { Pool } = require('pg');
 const { client } = require('../config/client');
 
 const signUp = async (req,res)=>{
@@ -61,7 +61,7 @@ const signUp = async (req,res)=>{
 }
 
 
-const login = async (req, res) => {
+const login = async (req, res,next) => {
   const { email, password } = req.body; 
   try {
     const userResult = await client.query('SELECT * FROM users WHERE email = $1', [email]);
@@ -110,9 +110,17 @@ const login = async (req, res) => {
 
   } catch (err) {
     console.error(err);
+    next(err)
     res.status(500).send('Login error');
   }
 };
+
+
+
+
+
+
+
 
 module.exports = {
     signUp,

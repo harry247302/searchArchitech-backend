@@ -9,7 +9,7 @@ const bodyParser = require('body-parser');
 const { Client }  = require('pg');
 const authRouter = require('./routes/Auth.route');
 const { client } = require('./config/client');
-
+const admin_authRouter = require('./routes/Admin.auth.router');
 
 
 dotenv.config({ path: './config/config.env' });
@@ -40,8 +40,8 @@ app.get('/get-cookie', (req, res) => {
 });
 
 ///////////////////////////////////////////////////////////////routes/////////////////////
-app.use('/auth-route',authRouter)
-
+app.use('/architec',authRouter)
+app.use('/superAdmin',admin_authRouter)
 
 
 ///////////////////////////////////////////////////////////////server////////////////////
