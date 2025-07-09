@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken';
 const bcrypt = require('bcrypt');
 const { Pool } = require('pg');
 const { client } = require('../config/client');
@@ -55,39 +56,63 @@ const signUp = async (req,res)=>{
             });
 
     } catch (error) {
-        console.log(error)
+      console.log(error)
     }
 }
 
 
-const login = async(req,res)=>{
-    const { email, password_hash } = req.body;
-  
-    try {
-        const userResult = await client.query('SELECT * FROM users WHERE email = $1', [email]);
-  
-      if (userResult.rows.length === 0) {
-        return res.status(401).send('User not found');
-      }
-  
-      const user = userResult.rows[0] || [];  
-      
-      const match = await bcrypt.compare(password_hash, userResult.password_hash);
-  
-      if (match) {
-        res.status(200).json({
-            message: 'Login successful',user
-          });
-      } else {
-        res.status(401).send('Incorrect password!');
-      }
+const login = async (req, res) => {
+  const { email, password } = req.body; 
+  try {
+    const userResult = await client.query('SELECT * FROM users WHERE email = $1', [email]);
 
-    } catch (err) {
-      console.error(err);
-      res.status(500).send('Login error');
+    if (userResult.rows.length === 0) {
+      return res.status(401).send('User not found');
     }
-}
 
+    const user = userResult.rows[0];
+
+    if (user.active_status === 'no') {
+      return res.status(403).send({ success: false, message: 'Your account is blocked, please contact support.' });
+    }
+
+    const match = await bcrypt.compare(password, user.password_hash);
+    if (!match) {
+      return res.status(401).send('Incorrect password!');
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET, 
+      { expiresIn: '1h' }
+    );
+
+    // Send success response with token
+    res.status(200).json({
+      message: 'Login successful',
+      token,
+      user: {
+        id: user.id,
+        category:user.category,
+        price:user.price,
+        phone_number:user.phone_number,
+        apartment:user.apartment,
+        postal_code:user.postal_code,
+        company_name:user.company_name,
+        gst_no:user.gst_no,
+        profile_url:user.profile_url,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+      }
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Login error');
+  }
+};
 
 module.exports = {
     signUp,

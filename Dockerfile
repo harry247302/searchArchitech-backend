@@ -1,18 +1,16 @@
-# --- Build React/Vite App ---
-    FROM node:18 AS build
+FROM node:18 AS build
 
-    WORKDIR /
-    
-    # Install dependencies
-    COPY  package*.json 
-    RUN npm install
-    
-    
-    # Copy the source files
-    COPY . .
-    
-    
-    # Set port
-    EXPOSE 5173
-    
-    CMD ["npm", "start"]
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy all files
+COPY . .
+
+# Expose the app port (change if needed)
+EXPOSE 5173
+
+# Start the server
+CMD ["npm", "run", "dev"]
