@@ -55,9 +55,6 @@ const { client } = require('../config/client');
     }
 }
 
-
-
-
  const deleteProductById = async (req, res, next) => {
   try {
     const { id } = req.body;
@@ -81,7 +78,6 @@ const { client } = require('../config/client');
     next(error); // or return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
-
 
 const update_product_by_id = async (req, res, next) => {
   try {
