@@ -153,13 +153,26 @@ const update_product_by_id = async (req, res, next) => {
     next(error);
   }
 };
+const get_all_products = async (req, res, next) => {
+  try {
+    const query = 'SELECT * FROM products;';
+    const result = await client.query(query);
 
-module.exports = { update_product_by_id };
+    res.status(200).json({
+      success: true,
+      products: result.rows,
+    });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
 
 
 
 module.exports = {
   create_product,
   deleteProductById,
-  update_product_by_id
+  update_product_by_id,
+  get_all_products
 };
