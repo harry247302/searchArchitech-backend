@@ -11,6 +11,7 @@ const authRouter = require('./routes/Auth.route');
 const { client } = require('./config/client');
 const admin_authRouter = require('./routes/Admin.auth.router');
 const productRouter = require('./routes/Product.route');
+const architech_router = require('./routes/Architech.route');
 
 
 dotenv.config({ path: './config/config.env' });
@@ -41,10 +42,10 @@ app.get('/get-cookie', (req, res) => {
 });
 
 ///////////////////////////////////////////////////////////////routes/////////////////////
-app.use('/architec',authRouter)
+app.use('/auth/architech',authRouter)
 app.use('/superAdmin',admin_authRouter)
 app.use('/product',productRouter)
-
+app.use('/architech',architech_router)
 ///////////////////////////////////////////////////////////////server////////////////////
 app.get('/', (req, res) => {
   res.send('Pikachu...!');
