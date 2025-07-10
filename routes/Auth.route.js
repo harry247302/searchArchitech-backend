@@ -1,4 +1,4 @@
-// routes/Auth.route.js
+// architech route
 const express = require('express');
 const { login, signUp } = require('../controllers/Auth.controller');
 const { protect } = require('../middleware/Auth.middleware');

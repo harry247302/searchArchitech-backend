@@ -12,14 +12,14 @@ const protect = asyncHandler(async(req,res,next)=>{
             
             const decode = jwt.verify(token,process.env.JWT_SECRET);
             const userId = decode.userId;            
-            const result = await client(
+            const rows = await client.query(
                 `SELECT id, first_name, last_name, email, category, phone_number, profile_url, company_name
                 FROM users WHERE id = $1`,
                 [userId]
             )
             if(rows.length ===0){
                 res.status(401);
-                throw new ('User not found')
+                throw new Error('User not found')
             }
             req.user = rows[0]
             next();

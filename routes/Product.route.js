@@ -16,6 +16,4 @@ productRouter.patch('/update/product/:id',protect,update_product_by_id)
 productRouter.get('/fetch-All/product',protect,get_all_products)
 
 
-
-
 module.exports = productRouter

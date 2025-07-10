@@ -1,6 +1,7 @@
+// architech controller
+
 const jwt  = require('jsonwebtoken') ;
 const bcrypt = require('bcrypt');
-// const { Pool } = require('pg');
 const { client } = require('../config/client');
 
 const signUp = async (req,res)=>{
@@ -59,7 +60,6 @@ const signUp = async (req,res)=>{
       console.log(error)
     }
 }
-
 
 const login = async (req, res,next) => {
   const { email, password } = req.body; 
