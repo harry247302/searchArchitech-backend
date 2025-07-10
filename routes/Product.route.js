@@ -11,5 +11,5 @@ productRouter.post('/create/product',protect,create_product)
 
 productRouter.delete('/delete/product',protect,deleteProductById)
 
-productRouter.pout('/update/product',protect,update_product_by_id)
+productRouter.patch('/update/product/:id',protect,update_product_by_id)
 module.exports = productRouter
