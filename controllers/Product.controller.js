@@ -81,60 +81,50 @@ const { client } = require('../config/client');
 
 const update_product_by_id = async (req, res, next) => {
   try {
-    const {
-      id,
-      title,
-      name,
-      image_1,
-      image_2,
-      image_3,
-      category,
-      brand_name,
-      type,
-      description,
-      material,
-      color_palette,
-      tags
-    } = req.body;
+    const id = req.params.id;
 
     if (!id) {
       return res.status(400).json({ message: "Product ID is required" });
     }
 
+    const allowedFields = [
+      "title",
+      "name",
+      "image_1",
+      "image_2",
+      "image_3",
+      "category",
+      "brand_name",
+      "type",
+      "description",
+      "material",
+      "color_palette",
+      "tags"
+    ];
+
+    const updates = [];
+    const values = [];
+
+    // Dynamically build update fields
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        updates.push(`${field} = $${updates.length + 1}`);
+        values.push(req.body[field]);
+      }
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ message: "No valid fields provided for update" });
+    }
+
+    // Add id at the end
+    values.push(id);
     const query = `
       UPDATE products
-      SET 
-        title = $1,
-        name = $2,
-        image_1 = $3,
-        image_2 = $4,
-        image_3 = $5,
-        category = $6,
-        brand_name = $7,
-        type = $8,
-        description = $9,
-        material = $10,
-        color_palette = $11,
-        tags = $12
-      WHERE id = $13
+      SET ${updates.join(', ')}
+      WHERE id = $${values.length}
       RETURNING *;
     `;
-
-    const values = [
-      title,
-      name,
-      image_1,
-      image_2,
-      image_3,
-      category,
-      brand_name,
-      type,
-      description,
-      material,
-      color_palette,
-      tags,
-      id
-    ];
 
     const result = await client.query(query, values);
 
@@ -153,6 +143,7 @@ const update_product_by_id = async (req, res, next) => {
     next(error);
   }
 };
+
 const get_all_products = async (req, res, next) => {
   try {
     const query = 'SELECT * FROM products;';

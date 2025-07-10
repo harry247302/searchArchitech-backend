@@ -3,7 +3,7 @@ const express = require('express');
 const { protect } = require('../middleware/Auth.middleware');
 const { create_product, deleteProductById, update_product_by_id, get_all_products } = require('../controllers/Product.controller');
 
-const productRouter = express()
+const productRouter = express.Router()
 
 
 

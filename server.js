@@ -43,7 +43,7 @@ app.get('/get-cookie', (req, res) => {
 ///////////////////////////////////////////////////////////////routes/////////////////////
 app.use('/architec',authRouter)
 app.use('/superAdmin',admin_authRouter)
-app.use('prdouct',productRouter)
+app.use('/product',productRouter)
 
 ///////////////////////////////////////////////////////////////server////////////////////
 app.get('/', (req, res) => {

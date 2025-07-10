@@ -13,4 +13,4 @@ COPY . .
 EXPOSE 5173
 
 # Start the server
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]
