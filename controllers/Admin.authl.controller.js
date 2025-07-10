@@ -26,7 +26,7 @@ const { client } = require("../config/client");
         
         const admin = await client.query(
             `INSERT INTO admin (
-              first_name, last_name,  phone_number, email, password_hash,profile_image, designation,
+              first_name, last_name,  phone_number, email, password_hash,profile_image, designation
             ) VALUES (
               $1, $2, $3, $4, $5, $6, $7
             ) RETURNING *`,
@@ -56,7 +56,7 @@ const { client } = require("../config/client");
 
  
 
-    const match = await bcrypt.compare(password, user.password_hash);
+    const match = await bcrypt.compare(password, admin.password_hash);
     if (!match) {
       return res.status(401).send('Incorrect password!');
     }
