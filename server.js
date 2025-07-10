@@ -10,6 +10,7 @@ const { Client }  = require('pg');
 const authRouter = require('./routes/Auth.route');
 const { client } = require('./config/client');
 const admin_authRouter = require('./routes/Admin.auth.router');
+const productRouter = require('./routes/Product.route');
 
 
 dotenv.config({ path: './config/config.env' });
@@ -42,7 +43,7 @@ app.get('/get-cookie', (req, res) => {
 ///////////////////////////////////////////////////////////////routes/////////////////////
 app.use('/architec',authRouter)
 app.use('/superAdmin',admin_authRouter)
-
+app.use('prdouct',productRouter)
 
 ///////////////////////////////////////////////////////////////server////////////////////
 app.get('/', (req, res) => {
@@ -52,3 +53,6 @@ PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT} `);
 });
+
+
+
