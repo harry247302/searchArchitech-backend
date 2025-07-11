@@ -2,98 +2,98 @@ const jwt  = require('jsonwebtoken') ;
 const bcrypt = require('bcrypt');
 const { client } = require("../config/client");
 
- const admin_signUp = async (req,res)=>{
-    const {
-        first_name,
-        last_name,
-        phone_number,
-        email,
-        password_hash,
-        profile_image,
-        designation
-      } = req.body;
-      console.log(req.body,"*************************************************");
-      
-    try {
-        const userCheck = await client.query('SELECT * FROM admin WHERE email = $1', [email]);
-        if (userCheck.rows.length > 0) {
-          return res.status(400).json({ message: 'Email already registered' });
-        }
+const admin_signUp = async (req, res) => {
+  const {
+    first_name,
+    last_name,
+    phone_number,
+    email,
+    password_hash,
+    profile_image,
+    designation
+  } = req.body;
 
-        const salt = await bcrypt.genSalt(10);
-        const hashPassword = await bcrypt.hash(password_hash,salt) 
-        console.log(hashPassword,"|||||||||||||||||||||||||||||||||||");
-        
-        const admin = await client.query(
-            `INSERT INTO admin (
-              first_name, last_name,  phone_number, email, password_hash,profile_image, designation
-            ) VALUES (
-              $1, $2, $3, $4, $5, $6, $7
-            ) RETURNING *`,
-            [
-                first_name, last_name,  phone_number, email, password_hash,profile_image, designation,
-            ]
-          );
-            res.status(201).json({
-                message: 'User registered successfully',
-                admin: admin.rows[0],
-            });
-    } catch (error) {
-      console.log(error)
+  try {
+    const userCheck = await client.query('SELECT * FROM admin WHERE email = $1', [email]);
+    if (userCheck.rows.length > 0) {
+      return res.status(400).json({ message: 'Email already registered' });
     }
-}
 
- const admin_login = async (req, res,next) => {
-  const { email, password } = req.body; 
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password_hash, salt);
+
+    const admin = await client.query(
+      `INSERT INTO admin (
+        first_name, last_name, phone_number, email, password_hash, profile_image, designation
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [first_name, last_name, phone_number, email, hashPassword, profile_image, designation]
+    );
+
+    res.status(201).json({
+      message: 'User registered successfully',
+      admin: admin.rows[0],
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const admin_login = async (req, res, next) => {
+  const { email, password_hash } = req.body;
+console.log(req.body);
+  if (!email || !password_hash) {
+    return res.status(400).json({ message: 'Email and password are required' });
+  }
+
   try {
     const adminResult = await client.query('SELECT * FROM admin WHERE email = $1', [email]);
 
     if (adminResult.rows.length === 0) {
-      return res.status(401).send('User not found');
+      return res.status(401).json({ message: 'User not found' });
     }
 
     const admin = adminResult.rows[0];
 
- 
-
-    const match = await bcrypt.compare(password, admin.password_hash);
+    const match = await bcrypt.compare(password_hash, admin.password_hash);
     if (!match) {
-      return res.status(401).send('Incorrect password!');
+      return res.status(401).json({ message: 'Incorrect password' });
     }
 
-  
     const token = jwt.sign(
-    { id: admin.id,
-        phone_number:admin.phone_number,
-        profile_image:admin.profile_image,
+      {
+        id: admin.id,
+        phone_number: admin.phone_number,
+        profile_image: admin.profile_image,
         email: admin.email,
         first_name: admin.first_name,
         last_name: admin.last_name,
-        desgination:admin.desgination},
-      process.env.JWT_SECRET, 
+        designation: admin.designation,  // fixed typo here
+      },
+      process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 
-    
     res.status(200).json({
       message: 'Login successful',
       token,
       user: {
-        phone_number:admin.phone_number,
-        profile_image:admin.profile_image,
+        phone_number: admin.phone_number,
+        profile_image: admin.profile_image,
         email: admin.email,
         first_name: admin.first_name,
         last_name: admin.last_name,
-        desgination:admin.desgination
+        designation: admin.designation,  // fixed typo here
       }
     });
 
   } catch (err) {
     console.error(err);
-    next(err)
-    res.status(500).send('Login error');
+    next(err);  // just call next(err), do not send res after next()
   }
 };
+
 
  const blockArchitech = async (req,res,next)=>{
     try {
