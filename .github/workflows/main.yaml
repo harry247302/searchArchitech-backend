@@ -1,0 +1,73 @@
+name: Backend Workflow
+
+on:
+  push:
+    branches:
+      - shadab
+
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest   
+    outputs:
+      backend_changed: ${{ steps.backend_changed.outputs.backend }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Check for backend-related file changes
+        id: backend_changed
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - 'controllers/**'
+              - 'middleware/**'
+              - 'routes/**'
+              - 'schema/**'
+              - 'config/**'
+              - 'server.js'
+              - 'Dockerfile'
+              - 'compose.yaml'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'vercel.json'
+
+      - name: Debug changed output
+        run: echo "backend_changed = ${{ steps.backend_changed.outputs.backend }}"
+
+  deploy-backend:
+    needs: check-changes
+    runs-on: ubuntu-latest
+    if: needs.check-changes.outputs.backend_changed == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: docker build -t $DOCKER_USERNAME/search-architech-backend .
+
+      - name: Push Docker image
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+          docker push $DOCKER_USERNAME/search-architech-backend
+          docker logout
+
+      - name: SSH login and deploy
+        env:
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y sshpass
+          sshpass -p "${SSH_PASSWORD}" ssh -o StrictHostKeyChecking=no "${SSH_USERNAME}"@"${SSH_HOST}" '
+            docker pull $DOCKER_USERNAME/search-architech-backend &&
+            cd /root/search-architech-backend &&
+            docker compose -f compose.yaml up -d --no-deps --build
+          '

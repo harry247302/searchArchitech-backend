@@ -1,5 +1,5 @@
 const express = require('express');
-const { admin_signUp, admin_login, blockArchitech } = require('../controllers/Admin.authl.controller');
+const { admin_signUp, admin_login, blockArchitech } = require('../controllers/Admin.auth.controller');
 const { protect } = require('../middleware/Auth.middleware');
 
 const authRouter = express.Router();  
