@@ -10,7 +10,7 @@ const delete_architech_by_id = async (req, res, next) => {
         return res.status(400).json({ message: 'User ID is required' });
       }
   
-      const query = 'DELETE FROM users WHERE id = $1 RETURNING *';
+      const query = 'DELETE FROM architech WHERE id = $1 RETURNING *';
       const result = await client.query(query, [id]);
   
       if (result.rowCount === 0) {
@@ -77,7 +77,7 @@ const update_architech_by_id = async (req, res, next) => {
     }
 
     // ✅ Get existing data for fallback values
-    const existingUser = await client.query('SELECT * FROM users WHERE id = $1', [id]);
+    const existingUser = await client.query('SELECT * FROM architech WHERE id = $1', [id]);
     if (existingUser.rows.length === 0) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -85,7 +85,7 @@ const update_architech_by_id = async (req, res, next) => {
     const existing = existingUser.rows[0];
 
     const query = `
-      UPDATE users
+      UPDATE architech
       SET 
         first_name = $1,
         last_name = $2,
@@ -141,8 +141,60 @@ const update_architech_by_id = async (req, res, next) => {
   }
 };
 
+const fetch_next_architech = async (req, res, next) => {
+  try {
+    let { page } = req.query;
+    page = parseInt(page) || 1;
+
+    const limit = 10;
+    const offset = (page - 1) * limit;
+
+    const query = 'SELECT * FROM architech ORDER BY id LIMIT $1 OFFSET $2;';
+    const result = await client.query(query, [limit, offset]);
+
+    res.status(200).json({
+      success: true,
+      currentPage: page,
+      data: result.rows,
+      nextPage: result.rows.length === limit ? page + 1 : null,
+    });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
+
+const fetch_previous_architech = async (req, res, next) => {
+  try {
+    let { page } = req.query;
+    page = parseInt(page) || 1;
+
+    // Prevent going to page 0 or below
+    if (page <= 1) {
+      return res.status(400).json({ message: "Already at the first page." });
+    }
+
+    const limit = 10;
+    const offset = (page - 2) * limit; // Go to previous page
+
+    const query = 'SELECT * FROM architech ORDER BY id LIMIT $1 OFFSET $2;';
+    const result = await client.query(query, [limit, offset]);
+
+    res.status(200).json({
+      success: true,
+      currentPage: page - 1,
+      data: result.rows,
+      previousPage: page - 2 > 0 ? page - 2 : null,
+    });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
   
 //   module.exports = {  };
   
-  module.exports = { delete_architech_by_id,update_architech_by_id };
+  module.exports = { delete_architech_by_id,update_architech_by_id,fetch_previous_architech,fetch_next_architech};
   

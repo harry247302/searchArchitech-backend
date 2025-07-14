@@ -23,7 +23,7 @@ const signUp = async (req, res) => {
   } = req.body;
 
   try {
-    const userCheck = await client.query('SELECT * FROM users WHERE email = $1', [email]);
+    const userCheck = await client.query('SELECT * FROM architech WHERE email = $1', [email]);
     if (userCheck.rows.length > 0) {
       return res.status(400).json({ message: 'Email already registered' });
     }
@@ -51,7 +51,7 @@ const signUp = async (req, res) => {
     }
 
     const newUser = await client.query(
-      `INSERT INTO users (
+      `INSERT INTO architech (
         first_name, last_name, category, price, phone_number, email, password_hash,
         street_address, apartment, city, postal_code, company_name, gst_no,
         profile_url, company_brochure_url
@@ -79,7 +79,7 @@ const signUp = async (req, res) => {
 const login = async (req, res,next) => {
   const { email, password } = req.body; 
   try {
-    const userResult = await client.query('SELECT * FROM users WHERE email = $1', [email]);
+    const userResult = await client.query('SELECT * FROM architech WHERE email = $1', [email]);
 
     if (userResult.rows.length === 0) {
       return res.status(401).send('User not found');
@@ -103,7 +103,6 @@ const login = async (req, res,next) => {
       { expiresIn: '1h' }
     );
 
-    // Send success response with token
     res.status(200).json({
       message: 'Login successful',
       token,

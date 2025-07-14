@@ -160,10 +160,10 @@ console.log(req.body);
  const blockArchitech = async (req,res,next)=>{
     try {
       const {active_status,email} = req.body
-      const userResult = await client.query('SELECT * FROM users WHERE email = $1', [email]);
+      const userResult = await client.query('SELECT * FROM architech WHERE email = $1', [email]);
   
       const updateResult = await client.query(
-        'UPDATE users SET active_status = $1 WHERE email = $2 RETURNING *',
+        'UPDATE architech SET active_status = $1 WHERE email = $2 RETURNING *',
         [active_status, email]
       );
   

@@ -13,6 +13,7 @@ const admin_authRouter = require('./routes/Admin.auth.router');
 const productRouter = require('./routes/Product.route');
 const architech_router = require('./routes/Architech.route');
 const cloudinaryRouter = require('./routes/Cloudinary.upload.route');
+const visitor_routers = require('./routes/Visitors.auth.route');
 
 
 dotenv.config({ path: './config/config.env' });
@@ -48,6 +49,7 @@ app.use('/superAdmin',admin_authRouter)
 app.use('/product',productRouter)
 app.use('/architech',architech_router)
 app.use('/upload_files',cloudinaryRouter)
+app.use('/visitor_routers',visitor_routers)
 ///////////////////////////////////////////////////////////////server////////////////////
 app.get('/', (req, res) => {
   res.send('Pikachu...!');
