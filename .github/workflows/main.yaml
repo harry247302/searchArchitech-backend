@@ -50,9 +50,6 @@ jobs:
         run: docker build -t $DOCKER_USERNAME/search-architech-backend .
 
       - name: Push Docker image
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
           echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
           docker push $DOCKER_USERNAME/search-architech-backend

@@ -1,6 +1,48 @@
 const jwt  = require('jsonwebtoken') ;
 const bcrypt = require('bcrypt');
 const { client } = require("../config/client");
+const fs = require('fs');
+const cloudinary = require('../config/cloudinary');
+// const admin_signUp = async (req, res) => {
+//   const {
+//     first_name,
+//     last_name,
+//     phone_number,
+//     email,
+//     password_hash,
+//     profile_image,
+//     designation
+//   } = req.body;
+
+//   try {
+//     const userCheck = await client.query('SELECT * FROM admin WHERE email = $1', [email]);
+//     if (userCheck.rows.length > 0) {
+//       return res.status(400).json({ message: 'Email already registered' });
+//     }
+
+//     const salt = await bcrypt.genSalt(10);
+//     const hashPassword = await bcrypt.hash(password_hash, salt);
+
+//     const admin = await client.query(
+//       `INSERT INTO admin (
+//         first_name, last_name, phone_number, email, password_hash, profile_image, designation
+//       ) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+//       [first_name, last_name, phone_number, email, hashPassword, profile_image, designation]
+//     );
+
+//     res.status(201).json({
+//       message: 'User registered successfully',
+//       admin: admin.rows[0],
+//     });
+
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ message: 'Server error' });
+//   }
+// };
+
+
+
 
 const admin_signUp = async (req, res) => {
   const {
@@ -9,24 +51,40 @@ const admin_signUp = async (req, res) => {
     phone_number,
     email,
     password_hash,
-    profile_image,
     designation
   } = req.body;
 
   try {
+ 
     const userCheck = await client.query('SELECT * FROM admin WHERE email = $1', [email]);
     if (userCheck.rows.length > 0) {
       return res.status(400).json({ message: 'Email already registered' });
     }
 
+    let imageUrl = null;
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'admin_profiles'
+      });
+      imageUrl = result.secure_url;
+
+     
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+    }
+
+  
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password_hash, salt);
 
+   
     const admin = await client.query(
       `INSERT INTO admin (
-        first_name, last_name, phone_number, email, password_hash, profile_image, designation
+        first_name, last_name, phone_number, email,
+        password_hash, profile_image, designation
       ) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      [first_name, last_name, phone_number, email, hashPassword, profile_image, designation]
+      [first_name, last_name, phone_number, email, hashPassword, imageUrl, designation]
     );
 
     res.status(201).json({
@@ -35,10 +93,14 @@ const admin_signUp = async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    console.error("Signup error:", error);
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+
+
+
 
 const admin_login = async (req, res, next) => {
   const { email, password_hash } = req.body;
