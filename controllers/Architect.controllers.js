@@ -28,11 +28,8 @@ const delete_architech_by_id = async (req, res, next) => {
     }
   };
   
-  const fs = require('fs');
-  const cloudinary = require('cloudinary').v2;
-  const { client } = require('../your-db-config'); // adjust as needed
-  
-  const update_architech_by_id = async (req, res, next) => {
+
+const update_architech_by_id = async (req, res, next) => {
     try {
       const { id } = req.params;
   
@@ -198,8 +195,74 @@ const fetch_previous_architech = async (req, res, next) => {
   }
 };
 
+
+//////////////////////////////////////////////////////////////////////////////////////filteratoin
+const filter_architechs = async (req, res, next) => {
+  try {
+    const {
+      category,
+      min_price,
+      max_price,
+      city,
+      postal_code,
+      company_name,
+      state_name
+    } = req.query;
+
+    let query = `SELECT * FROM architech WHERE 1=1`;
+    const values = [];
+    let i = 1;
+
+    if (category) {
+      query += ` AND category ILIKE $${i++}`;
+      values.push(`%${category}%`);
+    }
+
+    if (min_price) {
+      query += ` AND price >= $${i++}`;
+      values.push(min_price);
+    }
+
+    if (max_price) {
+      query += ` AND price <= $${i++}`;
+      values.push(max_price);
+    }
+
+    if (city) {
+      query += ` AND city ILIKE $${i++}`;
+      values.push(`%${city}%`);
+    }
+
+    if (postal_code) {
+      query += ` AND postal_code = $${i++}`;
+      values.push(postal_code);
+    }
+
+    if (company_name) {
+      query += ` AND company_name ILIKE $${i++}`;
+      values.push(`%${company_name}%`);
+    }
+
+    if (state_name) {
+      query += ` AND state_name ILIKE $${i++}`;
+      values.push(`%${state_name}%`);
+    }
+
+    const result = await client.query(query, values);
+
+    res.status(200).json({
+      success: true,
+      data: result.rows,
+      count: result.rowCount,
+    });
+
+  } catch (error) {
+    console.error("Error filtering architects:", error);
+    next(error);
+  }
+};
+
+
   
-//   module.exports = {  };
-  
-  module.exports = { delete_architech_by_id,update_architech_by_id,fetch_previous_architech,fetch_next_architech};
+  module.exports = { delete_architech_by_id,update_architech_by_id,fetch_previous_architech,fetch_next_architech,filter_architechs};
   

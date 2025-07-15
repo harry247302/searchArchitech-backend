@@ -1,19 +1,15 @@
   // architech route
   const express = require('express');
-  const { login, signUp } = require('../controllers/Auth.controller');
-  // const { protect } = require('../middleware/Auth.middleware');
-// const { protect } = require('../middleware/Auth.middleware');
-const multer = require('multer');
+const { signUp, login } = require('../controllers/Architech.auth.controller');
 
-// const authRouter = express.Router();
-
+const multer = require('multer')
 // Setup multer
 const upload = multer({ dest: 'uploads/' });
   const authRouter = express.Router();
 
   authRouter
     .post('/login', login)
-    .post('/sign-up',  upload.fields([
+    .post('/sign-up',upload.fields([
       { name: 'profile_url', maxCount: 1 },
       { name: 'company_brochure_url', maxCount: 1 }
     ]), signUp);
