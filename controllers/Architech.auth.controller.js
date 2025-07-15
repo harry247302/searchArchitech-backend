@@ -20,6 +20,7 @@ const signUp = async (req, res) => {
     postal_code,
     company_name,
     gst_no,
+    state_name
   } = req.body;
 
   try {
@@ -53,16 +54,16 @@ const signUp = async (req, res) => {
     const newUser = await client.query(
       `INSERT INTO architech (
         first_name, last_name, category, price, phone_number, email, password_hash,
-        street_address, apartment, city, postal_code, company_name, gst_no,
+        street_address, apartment, city, postal_code, company_name, gst_no,,state_name
         profile_url, company_brochure_url
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7,
-        $8, $9, $10, $11, $12, $13, $14, $15
+        $8, $9, $10, $11, $12, $13, $14, $15, $16
       ) RETURNING *`,
       [
         first_name, last_name, category, price, phone_number, email, hashPassword,
         street_address, apartment, city, postal_code, company_name, gst_no,
-        profile_url, company_brochure_url
+        profile_url, company_brochure_url,state_name
       ]
     );
 
