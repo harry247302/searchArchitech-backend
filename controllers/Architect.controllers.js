@@ -48,7 +48,7 @@ const update_architech_by_id = async (req, res, next) => {
         company_name,
         gst_no,
         state_name,
-        active_status
+        
       } = req.body;
   
       if (!id) {
@@ -100,9 +100,8 @@ const update_architech_by_id = async (req, res, next) => {
           gst_no = $13,
           profile_url = $14,
           company_brochure_url = $15,
-          active_status = $16,
-          state_name = $17
-        WHERE id = $18
+          state_name = $16
+        WHERE id = $17
         RETURNING *;
       `;
   
@@ -122,7 +121,6 @@ const update_architech_by_id = async (req, res, next) => {
         gst_no || existing.gst_no,
         profileUrl || existing.profile_url,
         brochureUrl || existing.company_brochure_url,
-        active_status ?? existing.active_status,
         state_name || existing.state_name,
         id
       ];
