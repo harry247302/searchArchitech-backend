@@ -54,7 +54,7 @@ const signUp = async (req, res) => {
     const newUser = await client.query(
       `INSERT INTO architech (
         first_name, last_name, category, price, phone_number, email, password_hash,
-        street_address, apartment, city, postal_code, company_name, gst_no,,state_name
+        street_address, apartment, city, postal_code, company_name, gst_no,state_name,
         profile_url, company_brochure_url
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7,
