@@ -1,58 +1,22 @@
 const jwt  = require('jsonwebtoken') ;
 const bcrypt = require('bcrypt');
+const dotenv = require('dotenv');
+const nodemailer = require("nodemailer");
 const { client } = require("../config/client");
 const fs = require('fs');
 const cloudinary = require('../config/cloudinary');
-// const admin_signUp = async (req, res) => {
-//   const {
-//     first_name,
-//     last_name,
-//     phone_number,
-//     email,
-//     password_hash,
-//     profile_image,
-//     designation
-//   } = req.body;
-
-//   try {
-//     const userCheck = await client.query('SELECT * FROM admin WHERE email = $1', [email]);
-//     if (userCheck.rows.length > 0) {
-//       return res.status(400).json({ message: 'Email already registered' });
-//     }
-
-//     const salt = await bcrypt.genSalt(10);
-//     const hashPassword = await bcrypt.hash(password_hash, salt);
-
-//     const admin = await client.query(
-//       `INSERT INTO admin (
-//         first_name, last_name, phone_number, email, password_hash, profile_image, designation
-//       ) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-//       [first_name, last_name, phone_number, email, hashPassword, profile_image, designation]
-//     );
-
-//     res.status(201).json({
-//       message: 'User registered successfully',
-//       admin: admin.rows[0],
-//     });
-
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({ message: 'Server error' });
-//   }
-// };
+dotenv.config({ path: './config/config.env' });
 
 
-
-
-const admin_signUp = async (req, res) => {
+const  admin_signUp = async (req, res) => {
   const {
     first_name,
     last_name,
     phone_number,
-    email,
-    password_hash,
-    designation
+    password,
+    email
   } = req.body;
+
 
   try {
  
@@ -61,12 +25,14 @@ const admin_signUp = async (req, res) => {
       return res.status(400).json({ message: 'Email already registered' });
     }
 
-    let imageUrl = null;
+    let profile_image = null;
     if (req.file) {
       const result = await cloudinary.uploader.upload(req.file.path, {
         folder: 'admin_profiles'
       });
-      imageUrl = result.secure_url;
+      profile_image = result.secure_url;
+      console.log(result , "_____________");
+      
 
      
       if (fs.existsSync(req.file.path)) {
@@ -76,15 +42,22 @@ const admin_signUp = async (req, res) => {
 
   
     const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(password_hash, salt);
+    console.log("salt", salt);
+    console.log("password_hash", password);
+    
+
+    
+    const hashPassword = await bcrypt.hash(password, salt);
+    console.log("hashPassword", hashPassword);
+    
 
    
     const admin = await client.query(
       `INSERT INTO admin (
         first_name, last_name, phone_number, email,
-        password_hash, profile_image, designation
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      [first_name, last_name, phone_number, email, hashPassword, imageUrl, designation]
+        password_hash, profile_image
+      ) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [first_name, last_name, phone_number, email, hashPassword, profile_image]
     );
 
     res.status(201).json({
@@ -99,12 +72,9 @@ const admin_signUp = async (req, res) => {
 };
 
 
-
-
-
 const admin_login = async (req, res, next) => {
   const { email, password_hash } = req.body;
-console.log(req.body);
+  console.log(req.body);
   if (!email || !password_hash) {
     return res.status(400).json({ message: 'Email and password are required' });
   }
@@ -117,6 +87,7 @@ console.log(req.body);
     }
 
     const admin = adminResult.rows[0];
+    
 
     const match = await bcrypt.compare(password_hash, admin.password_hash);
     if (!match) {
@@ -137,9 +108,43 @@ console.log(req.body);
       { expiresIn: '1h' }
     );
 
+     const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Recipient email is required" });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOtp = await bcrypt.hash(otp, 10);
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: `"Admin Portal" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "🔐 Your OTP Code",
+      html: `
+        <div style="font-family: Arial; padding: 20px; border-radius: 6px; background: #f9f9f9; color: #333;">
+          <h2>Admin OTP Verification</h2>
+          <p>Your One-Time Password (OTP) is:</p>
+          <h1 style="color: white; background: #007bff; padding: 10px 20px; border-radius: 5px; display: inline-block;">${otp}</h1>
+          <p>This OTP is valid for 5 minutes. Please do not share it.</p>
+        </div>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent:", info.response);
+
+
+
     res.status(200).json({
       message: 'Login successful',
       token,
+      hashedOtp,
       user: {
         phone_number: admin.phone_number,
         profile_image: admin.profile_image,
@@ -155,7 +160,6 @@ console.log(req.body);
     next(err);  // just call next(err), do not send res after next()
   }
 };
-
 
  const blockArchitech = async (req,res,next)=>{
     try {

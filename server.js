@@ -5,9 +5,8 @@ const morgan = require('morgan')
 const app = express();
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-// const { client } = require('./config/client');
 const { Client }  = require('pg');
-const authRouter = require('./routes/Auth.route');
+const authRouter = require('./routes/Architech.auth.route');
 const { client } = require('./config/client');
 const admin_authRouter = require('./routes/Admin.auth.router');
 const productRouter = require('./routes/Product.route');
@@ -15,6 +14,7 @@ const architech_router = require('./routes/Architech.route');
 const cloudinaryRouter = require('./routes/Cloudinary.upload.route');
 const visitor_routers = require('./routes/Visitors.auth.route');
 const feedback_router = require('./routes/Feedback.route');
+const project_router = require('./routes/Architech.projects.route');
 
 
 dotenv.config({ path: './config/config.env' });
@@ -32,6 +32,7 @@ client.connect()
     .catch((err) => {
         console.log(err);
     })
+
 
 ///////////////////////////////////////////////////////////////////////////cookies/////////////////
 app.get('/set-cookie', (req, res) => {
@@ -51,12 +52,13 @@ app.use('/product',productRouter)
 app.use('/architech',architech_router)
 app.use('/upload_files',cloudinaryRouter)
 app.use('/visitor_routers',visitor_routers)
+app.use('/projects',project_router)
 app.use('/api/feedback',feedback_router)
 ///////////////////////////////////////////////////////////////server////////////////////
 app.get('/', (req, res) => {
   res.send('Pikachu...!');
 });
-PORT = process.env.PORT || 3000;
+PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT} `);
 });

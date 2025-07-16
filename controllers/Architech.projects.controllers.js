@@ -185,6 +185,7 @@ const delete_projects_by_architect = async (req, res) => {
 
 
 module.exports = {
+  getAllProjects,
   create_project,
   get_projects_by_architect,
   update_projects_by_architect,

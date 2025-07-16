@@ -1,16 +1,20 @@
 const express = require('express');
 const { getAllProjects, create_project, update_projects_by_architect, delete_projects_by_architect, get_projects_by_architect } = require('../controllers/Architech.projects.controllers');
 const { protect } = require('../middleware/Auth.middleware');
-const router = express.Router();
+const project_router = express.Router();
+const multer = require('multer')
+const upload = multer({ dest: 'uploads/' });
 
-router.post('/projects/create',protect,upload.single('image'), create_project);
 
-router.put('/projects/update/:architect_id', update_projects_by_architect);
+project_router.post('/projects/create',protect,upload.fields([{ name: "image", maxCount: 1 },{ name: "videos", maxCount: 1 }]),create_project);
 
-router.delete('/projects/delete/:architect_id', delete_projects_by_architect);
 
-router.get('/projects/fetch/:architectId', get_projects_by_architect);
+project_router.put('/update/:architect_id', update_projects_by_architect);
 
-router.get('/projects/fetch', getAllProjects);
+project_router.delete('/delete/:architect_id', delete_projects_by_architect);
 
-module.exports = router;
+project_router.get('/fetch/:architectId', get_projects_by_architect);
+
+project_router.get('/fetch', getAllProjects);
+
+module.exports = project_router;
