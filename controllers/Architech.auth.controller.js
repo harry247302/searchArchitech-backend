@@ -89,7 +89,7 @@ const login = async (req, res,next) => {
     const user = userResult.rows[0];
 
     if (user.active_status === 'no') {
-      return res.status(403).send({ success: false, message: 'Your account is blocked, please contact support.' });
+      return res.status(403).send({ success: false, message: 'You are under verfication please contact to support' });
     }
 
     const match = await bcrypt.compare(password, user.password_hash);
