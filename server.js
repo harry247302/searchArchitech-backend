@@ -20,7 +20,12 @@ const project_router = require('./routes/Architech.projects.route');
 dotenv.config({ path: './config/config.env' });
 app.use(morgan('dev'));
 app.use(cookieParser());
-app.use(cors('*'));
+
+app.use(cors({
+  origin: 'http://localhost:8000',  
+  credentials: true                
+}));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -58,7 +63,7 @@ app.use('/api/feedback',feedback_router)
 app.get('/', (req, res) => {
   res.send('Pikachu...!');
 });
-PORT = process.env.PORT || 8000;
+PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT} `);
 });
