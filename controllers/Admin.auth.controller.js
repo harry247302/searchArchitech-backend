@@ -143,7 +143,6 @@ const admin_login = async (req, res, next) => {
 
     res.status(200).json({
       message: 'Login successful',
-      token,
       hashedOtp,
       user: {
         phone_number: admin.phone_number,
@@ -153,6 +152,13 @@ const admin_login = async (req, res, next) => {
         last_name: admin.last_name,
         designation: admin.designation,  // fixed typo here
       }
+    });
+
+    res.cookie('token', token, {
+      httpOnly: true,                      
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',                  
+      maxAge: 24 * 60 * 60 * 1000            
     });
 
   } catch (err) {
