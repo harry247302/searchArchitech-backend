@@ -2,6 +2,34 @@ const { client } = require("../config/client");
 const fs = require("fs");
 const cloudinary = require("../config/cloudinary");
 
+const getArchitectById = async (req, res) => {
+  try {
+    const { architectId } = req.params;
+
+    const query = `
+      SELECT 
+        id, first_name, last_name, category, price, phone_number, email,
+        street_address, apartment, city, postal_code, company_name, gst_no,
+        profile_url, company_brochure_url, created_at, active_status, state_name
+      FROM users
+      WHERE id = $1
+    `;
+
+    const result = await client.query(query, [architectId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Architect not found' });
+    }
+
+    res.status(200).json(result.rows[0]);
+  } catch (error) {
+    console.error("Error fetching architect:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
 const delete_architech_by_id = async (req, res, next) => {
     try {
       const { id } = req.params; // get ID from URL
@@ -262,5 +290,5 @@ const filter_architechs = async (req, res, next) => {
 
 
   
-  module.exports = { delete_architech_by_id,update_architech_by_id,fetch_previous_architech,fetch_next_architech,filter_architechs};
+  module.exports = { getArchitectById, delete_architech_by_id,update_architech_by_id,fetch_previous_architech,fetch_next_architech,filter_architechs};
   
