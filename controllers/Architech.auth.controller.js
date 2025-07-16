@@ -54,7 +54,7 @@ const signUp = async (req, res) => {
     const newUser = await client.query(
       `INSERT INTO architech (
         first_name, last_name, category, price, phone_number, email, password_hash,
-        street_address, apartment, city, postal_code, company_name, gst_no,,state_name
+        street_address, apartment, city, postal_code, company_name, gst_no,state_name,
         profile_url, company_brochure_url
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7,
@@ -89,7 +89,7 @@ const login = async (req, res,next) => {
     const user = userResult.rows[0];
 
     if (user.active_status === 'no') {
-      return res.status(403).send({ success: false, message: 'Your account is blocked, please contact support.' });
+      return res.status(403).send({ success: false, message: 'You are under verfication please contact to support' });
     }
 
     const match = await bcrypt.compare(password, user.password_hash);
