@@ -102,38 +102,38 @@ const login = async (req, res,next) => {
     }
 
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const hashedOtp = await bcrypt.hash(otp, 10);
+    // const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // const hashedOtp = await bcrypt.hash(otp, 10);
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    // const transporter = nodemailer.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     user: process.env.EMAIL_USER,
+    //     pass: process.env.EMAIL_PASS,
+    //   },
+    // });
 
-    const mailOptions = {
-      from: `"Admin Portal" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "🔐 Your OTP Code",
-      html: `
-        <div style="font-family: Arial; padding: 20px; border-radius: 6px; background: #f9f9f9; color: #333;">
-          <h2>Admin OTP Verification</h2>
-          <p>Your One-Time Password (OTP) is:</p>
-          <h1 style="color: white; background: #007bff; padding: 10px 20px; border-radius: 5px; display: inline-block;">${otp}</h1>
-          <p>This OTP is valid for 5 minutes. Please do not share it.</p>
-        </div>
-      `,
-    };
+    // const mailOptions = {
+    //   from: `"Admin Portal" <${process.env.EMAIL_USER}>`,
+    //   to: email,
+    //   subject: "🔐 Your OTP Code",
+    //   html: `
+    //     <div style="font-family: Arial; padding: 20px; border-radius: 6px; background: #f9f9f9; color: #333;">
+    //       <h2>Admin OTP Verification</h2>
+    //       <p>Your One-Time Password (OTP) is:</p>
+    //       <h1 style="color: white; background: #007bff; padding: 10px 20px; border-radius: 5px; display: inline-block;">${otp}</h1>
+    //       <p>This OTP is valid for 5 minutes. Please do not share it.</p>
+    //     </div>
+    //   `,
+    // };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent:", info.response);
+    // const info = await transporter.sendMail(mailOptions);
+    // console.log("Email sent:", info.response);
 
-    res.status(200).json({
-      message: "OTP sent successfully!",
-      hashedOtp, 
-    });
+    // res.status(200).json({
+    //   message: "OTP sent successfully!",
+    //   hashedOtp, 
+    // });
 
 
 
@@ -143,7 +143,8 @@ const login = async (req, res,next) => {
       { expiresIn: '1h' }
     );
 
-     res.cookie('token', token, {
+     res.cookie({
+      'token': token, 
       httpOnly: true,                      
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'Strict',                  
