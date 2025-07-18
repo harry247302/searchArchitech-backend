@@ -16,6 +16,7 @@ const visitor_routers = require('./routes/Visitors.auth.route');
 const feedback_router = require('./routes/Feedback.route');
 const project_router = require('./routes/Architech.projects.route');
 const otpVerificationRouter = require('./routes/Otp.verfication.route');
+const ticketRrouter = require('./routes/Tickets.router');
 
 
 dotenv.config({ path: './config/config.env' });
@@ -61,6 +62,7 @@ app.use('/visitor_routers',visitor_routers)
 app.use('/projects',project_router)
 app.use('/otpVerification',otpVerificationRouter)
 app.use('/api/feedback',feedback_router)
+app.use('/tickets',ticketRrouter)
 ///////////////////////////////////////////////////////////////server////////////////////
 app.get('/', (req, res) => {
   res.send('Pikachu...!');
