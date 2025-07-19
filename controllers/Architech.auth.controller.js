@@ -22,19 +22,22 @@ const signUp = async (req, res) => {
     gst_no,
     state_name
   } = req.body;
+console.log("chal teri ma ki chuut");
 
+  console.log(req.files,"/////////////////////////////////////////////////");
+  
   try {
     const userCheck = await client.query('SELECT * FROM architech WHERE email = $1', [email]);
     if (userCheck.rows.length > 0) {
       return res.status(400).json({ message: 'Email already registered' });
     }
-
+    
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password_hash, salt);
-
+    
     let profile_url = '';
     let company_brochure_url = '';
-
+    
     if (req.files?.profile_url?.[0]) {
       const profileResult = await cloudinary.uploader.upload(req.files.profile_url[0].path, {
         folder: 'uploads'
@@ -42,7 +45,7 @@ const signUp = async (req, res) => {
       profile_url = profileResult.secure_url;
       fs.unlinkSync(req.files.profile_url[0].path);
     }
-
+    
     if (req.files?.company_brochure_url?.[0]) {
       const brochureResult = await cloudinary.uploader.upload(req.files.company_brochure_url[0].path, {
         folder: 'uploads'
@@ -50,6 +53,7 @@ const signUp = async (req, res) => {
       company_brochure_url = brochureResult.secure_url;
       fs.unlinkSync(req.files.company_brochure_url[0].path);
     }
+    
 
     const newUser = await client.query(
       `INSERT INTO architech (
@@ -73,7 +77,7 @@ const signUp = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: 'Something went wrong', error });
+    res.status(500).json({ message: 'Something went wrong', error:error.message });
   }
 };
 
@@ -98,38 +102,38 @@ const login = async (req, res,next) => {
     }
 
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const hashedOtp = await bcrypt.hash(otp, 10);
+    // const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // const hashedOtp = await bcrypt.hash(otp, 10);
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    // const transporter = nodemailer.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     user: process.env.EMAIL_USER,
+    //     pass: process.env.EMAIL_PASS,
+    //   },
+    // });
 
-    const mailOptions = {
-      from: `"Admin Portal" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "🔐 Your OTP Code",
-      html: `
-        <div style="font-family: Arial; padding: 20px; border-radius: 6px; background: #f9f9f9; color: #333;">
-          <h2>Admin OTP Verification</h2>
-          <p>Your One-Time Password (OTP) is:</p>
-          <h1 style="color: white; background: #007bff; padding: 10px 20px; border-radius: 5px; display: inline-block;">${otp}</h1>
-          <p>This OTP is valid for 5 minutes. Please do not share it.</p>
-        </div>
-      `,
-    };
+    // const mailOptions = {
+    //   from: `"Admin Portal" <${process.env.EMAIL_USER}>`,
+    //   to: email,
+    //   subject: "🔐 Your OTP Code",
+    //   html: `
+    //     <div style="font-family: Arial; padding: 20px; border-radius: 6px; background: #f9f9f9; color: #333;">
+    //       <h2>Admin OTP Verification</h2>
+    //       <p>Your One-Time Password (OTP) is:</p>
+    //       <h1 style="color: white; background: #007bff; padding: 10px 20px; border-radius: 5px; display: inline-block;">${otp}</h1>
+    //       <p>This OTP is valid for 5 minutes. Please do not share it.</p>
+    //     </div>
+    //   `,
+    // };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent:", info.response);
+    // const info = await transporter.sendMail(mailOptions);
+    // console.log("Email sent:", info.response);
 
-    res.status(200).json({
-      message: "OTP sent successfully!",
-      hashedOtp, 
-    });
+    // res.status(200).json({
+    //   message: "OTP sent successfully!",
+    //   hashedOtp, 
+    // });
 
 
 
@@ -139,7 +143,8 @@ const login = async (req, res,next) => {
       { expiresIn: '1h' }
     );
 
-     res.cookie('token', token, {
+     res.cookie({
+      'token': token, 
       httpOnly: true,                      
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'Strict',                  

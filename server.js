@@ -15,14 +15,15 @@ const cloudinaryRouter = require('./routes/Cloudinary.upload.route');
 const visitor_routers = require('./routes/Visitors.auth.route');
 const feedback_router = require('./routes/Feedback.route');
 const project_router = require('./routes/Architech.projects.route');
+const otpVerificationRouter = require('./routes/Otp.verfication.route');
+const ticketRrouter = require('./routes/Tickets.router');
 
 
 dotenv.config({ path: './config/config.env' });
 app.use(morgan('dev'));
 app.use(cookieParser());
 
-app.use(cors(
-  {
+app.use(cors({
   origin: 'http://localhost:3000',  
   credentials: true                
 }
@@ -60,12 +61,14 @@ app.use('/architech',architech_router)
 app.use('/upload_files',cloudinaryRouter)
 app.use('/visitor_routers',visitor_routers)
 app.use('/projects',project_router)
+app.use('/otpVerification',otpVerificationRouter)
 app.use('/api/feedback',feedback_router)
+app.use('/tickets',ticketRrouter)
 ///////////////////////////////////////////////////////////////server////////////////////
 app.get('/', (req, res) => {
   res.send('Pikachu...!');
 });
-PORT = process.env.PORT || 3001;
+PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT} `);
 });

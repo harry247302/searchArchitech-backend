@@ -34,6 +34,8 @@ const signup_visitor = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+
 const login_visitor = async (req, res) => {
   const { email, password } = req.body;
 

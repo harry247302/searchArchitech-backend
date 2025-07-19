@@ -17,7 +17,8 @@ const  admin_signUp = async (req, res) => {
     email
   } = req.body;
 
-
+  console.log(req.body);
+  
   try {
  
     const userCheck = await client.query('SELECT * FROM admin WHERE email = $1', [email]);
@@ -109,41 +110,49 @@ const admin_login = async (req, res, next) => {
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
-    if (!email) return res.status(400).json({ message: "Recipient email is required" });
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const hashedOtp = await bcrypt.hash(otp, 10);
+    //  const { email } = req.body;
+    // if (!email) return res.status(400).json({ message: "Recipient email is required" });
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
+    // const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // const hashedOtp = await bcrypt.hash(otp, 10);
+
+    // const transporter = nodemailer.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     user: process.env.EMAIL_USER,
+    //     pass: process.env.EMAIL_PASS,
+    //   },
+    // });
+
+    // const mailOptions = {
+    //   from: `"Admin Portal" <${process.env.EMAIL_USER}>`,
+    //   to: email,
+    //   subject: "🔐 Your OTP Code",
+    //   html: `
+    //     <div style="font-family: Arial; padding: 20px; border-radius: 6px; background: #f9f9f9; color: #333;">
+    //       <h2>Admin OTP Verification</h2>
+    //       <p>Your One-Time Password (OTP) is:</p>
+    //       <h1 style="color: white; background: #007bff; padding: 10px 20px; border-radius: 5px; display: inline-block;">${otp}</h1>
+    //       <p>This OTP is valid for 5 minutes. Please do not share it.</p>
+    //     </div>
+    //   `,
+    // };
+
+    // const info = await transporter.sendMail(mailOptions);
+    // console.log("Email sent:", info.response);
+
+
+    res.cookie('token', token, {
+      httpOnly: true,                      
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',                  
+      maxAge: 24 * 60 * 60 * 1000            
     });
-
-    const mailOptions = {
-      from: `"Admin Portal" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "🔐 Your OTP Code",
-      html: `
-        <div style="font-family: Arial; padding: 20px; border-radius: 6px; background: #f9f9f9; color: #333;">
-          <h2>Admin OTP Verification</h2>
-          <p>Your One-Time Password (OTP) is:</p>
-          <h1 style="color: white; background: #007bff; padding: 10px 20px; border-radius: 5px; display: inline-block;">${otp}</h1>
-          <p>This OTP is valid for 5 minutes. Please do not share it.</p>
-        </div>
-      `,
-    };
-
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent:", info.response);
-
-
 
     res.status(200).json({
       message: 'Login successful',
-      hashedOtp,
+      // hashedOtp,
       user: {
         phone_number: admin.phone_number,
         profile_image: admin.profile_image,
@@ -154,12 +163,7 @@ const admin_login = async (req, res, next) => {
       }
     });
 
-    res.cookie('token', token, {
-      httpOnly: true,                      
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',                  
-      maxAge: 24 * 60 * 60 * 1000            
-    });
+console.log(token,"|||||||||||||||||||||||||||||||||||||||||||||||");
 
   } catch (err) {
     console.error(err);
@@ -190,4 +194,16 @@ const admin_login = async (req, res, next) => {
     }
   }
 
-  module.exports = { admin_signUp,admin_login,blockArchitech };
+
+  const checkAuth = (req,res)=>{
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: "Not authenticated" });
+  
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      res.status(200).json({ message: "Authenticated", user: decoded });
+    } catch (err) {
+      res.status(401).json({ message: "Invalid token" });
+    }
+  }
+  module.exports = { admin_signUp,admin_login,blockArchitech ,checkAuth};
