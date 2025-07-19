@@ -74,7 +74,9 @@ const  admin_signUp = async (req, res) => {
 
 const admin_login = async (req, res, next) => {
   const { email, password_hash } = req.body;
-  console.log(req.body);
+  console.log(req.body.email);
+  
+  
   if (!email || !password_hash) {
     return res.status(400).json({ message: 'Email and password are required' });
   }
@@ -107,8 +109,6 @@ const admin_login = async (req, res, next) => {
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
-
-     const { email } = req.body;
     if (!email) return res.status(400).json({ message: "Recipient email is required" });
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
