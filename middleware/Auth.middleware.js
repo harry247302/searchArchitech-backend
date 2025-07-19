@@ -5,28 +5,38 @@ const protect = asyncHandler(async(req,res,next)=>{
     let token;
 
     token = req.cookies.token;
+    // console.log(token, "---------------------------------------------");
+    
 
     if(token){
-        try {
-            console.log(process.env.JWT_SECRET,"---------------------------------------------------------------------");
-            
+        try { 
             const decode = jwt.verify(token,process.env.JWT_SECRET);
-            const userId = decode.userId;            
-            const rows = await client.query(
-                `SELECT id, first_name, last_name, email, category, phone_number, profile_url, company_name
-                FROM users WHERE id = $1`,
+            // console.log(decode);
+            
+            const userId = decode.id;
+            // console.log(userId);
+                        
+            const result = await client.query(
+                `SELECT id,email 
+                FROM architech WHERE id = $1`,
                 [userId]
             )
+            const rows = result.rows
+            console.log(rows);
+            
             if(rows.length ===0){
                 res.status(401);
                 throw new Error('User not found')
             }
+            
             req.user = rows[0]
+            // console.log(req.user);
+            
             next();
         } catch (error) {
             console.log(error)
             res.status(401);
-            throw new error('No authrization')
+            throw new Error('No authrization')
         }
     }
 })
