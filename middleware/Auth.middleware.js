@@ -6,8 +6,6 @@ const protect = asyncHandler(async(req,res,next)=>{
 
     token = req.cookies.token;
     // console.log(token, "---------------------------------------------");
-    
-
     if(token){
         try { 
             const decode = jwt.verify(token,process.env.JWT_SECRET);
@@ -47,7 +45,7 @@ const protect = asyncHandler(async(req,res,next)=>{
             req.user = rows[0]
             // console.log(req.user);
             
-            // next();
+            next();
         } catch (error) {
             console.log(error)
             res.status(401);
