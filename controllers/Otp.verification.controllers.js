@@ -5,10 +5,13 @@ dotenv.config({ path: './config/config.env' });
 const bcrypt = require('bcrypt')
 
 const otpVerfication = async(req,res,next)=>{
-    const {email} = req.body
+    const {email} = req.params
+    console.log(email);
+    
     try {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const hashedOtp = await bcrypt.hash(otp, 10);
+    const salt = await bcrypt.genSalt(10);
+    const hashedOtp = await bcrypt.hash(otp, salt);
 
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -34,6 +37,13 @@ const otpVerfication = async(req,res,next)=>{
 
     const info = await transporter.sendMail(mailOptions);
     console.log("Email sent:", info.response);
+   
+    res.cookie('visitorOtp', hashedOtp, {
+    path: '/',
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict',
+    maxAge: 60 * 1000
+  });
 
     res.status(200).json({
       message: "OTP sent successfully!",
@@ -41,7 +51,7 @@ const otpVerfication = async(req,res,next)=>{
     });
     } catch (error) {
         console.log(error)
-        next(error)
+        // next(error)
     }
 }
 
