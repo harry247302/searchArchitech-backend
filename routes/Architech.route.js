@@ -5,7 +5,7 @@ const { protect } = require('../middleware/Auth.middleware')
 const upload = multer({ dest: 'uploads/' });
 
 const architech_router = express.Router()
-architech_router.get('/get/architect/:architectId',protect,getArchitectById)
+architech_router.get('/get/architect/:architectId',getArchitectById)
 architech_router.delete('/delete/architech/:id', protect, delete_architech_by_id)
 architech_router.put('/update/architech/:id', upload.fields([{ name: "profile_url", maxCount: 1 },{ name: "company_brochure_url", maxCount: 1 }]), protect, update_architech_by_id)
 architech_router.get('/fetch/architech/next_page',protect,fetch_next_architech)
