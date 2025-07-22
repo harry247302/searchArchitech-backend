@@ -38,7 +38,7 @@ const otpVerfication = async(req,res,next)=>{
     const info = await transporter.sendMail(mailOptions);
     console.log("Email sent:", info.response);
    
-    res.cookie('visitorOtp', hashedOtp, {
+    res.cookie('Otp', hashedOtp, {
     path: '/',
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'Strict',
