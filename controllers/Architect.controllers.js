@@ -191,7 +191,6 @@ const update_architech_by_id = async (req, res, next) => {
     }
   };
   
-// ?????????????????????????????????????????????????????????????????????//pagination
 
 const fetch_next_architech = async (req, res, next) => {
   try {
@@ -215,6 +214,24 @@ const fetch_next_architech = async (req, res, next) => {
     next(error);
   }
 };
+
+
+const fetch_all_architech = async (req, res, next) => {
+  try {
+    const query = 'SELECT * FROM architech ORDER BY id;';
+    const result = await client.query(query);
+
+    res.status(200).json({
+      success: true,
+      total: result.rowCount,
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
 
 
 const fetch_previous_architech = async (req, res, next) => {
@@ -314,5 +331,5 @@ const filter_architechs = async (req, res, next) => {
 
 
   
-  module.exports = { getArchitectById, delete_architech_by_id,update_architech_by_id,fetch_previous_architech,fetch_next_architech,filter_architechs};
+  module.exports = {fetch_all_architech, getArchitectById, delete_architech_by_id,update_architech_by_id,fetch_previous_architech,fetch_next_architech,filter_architechs};
   
