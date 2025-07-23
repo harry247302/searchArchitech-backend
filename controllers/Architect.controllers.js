@@ -2,32 +2,85 @@ const { client } = require("../config/client");
 const fs = require("fs");
 const cloudinary = require("../config/cloudinary");
 
-const delete_architech_by_id = async (req, res, next) => {
-    try {
-      const { id } = req.params; // get ID from URL
-  
-      if (!id) {
-        return res.status(400).json({ message: 'User ID is required' });
-      }
-  
-      const query = 'DELETE FROM architech WHERE id = $1 RETURNING *';
-      const result = await client.query(query, [id]);
-  
-      if (result.rowCount === 0) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-  
-      res.status(200).json({
-        success: true,
-        message: 'User deleted successfully.',
-        deletedUser: result.rows[0],
-      });
-    } catch (error) {
-      console.error(error);
-      next(error);
+const getArchitectById = async (req, res) => {
+  try {
+    const { architectId } = req.params;
+
+    // 1. Fetch architect details from "architech" table
+    const architectQuery = `
+      SELECT 
+        id, first_name, last_name, category, price, phone_number, email,
+        street_address, apartment, city, postal_code, company_name, gst_no,
+        profile_url, company_brochure_url, created_at, active_status, state_name
+      FROM architech
+      WHERE id = $1
+    `;
+
+    const architectResult = await client.query(architectQuery, [architectId]);
+
+    if (architectResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Architect not found' });
     }
-  };
+
+    const architect = architectResult.rows[0];
+
+    // 2. Fetch feedback with visitor info
+    const feedbackQuery = `
+      SELECT 
+        f.id AS feedback_id,
+        f.rating,
+        f.comment,
+        f.created_at,
+        v.name AS visitor_name,
+        v.email AS visitor_email
+      FROM feedback f
+      JOIN visitors v ON f.visitor_id = v.id
+      WHERE f.architech_id = $1
+      ORDER BY f.created_at DESC
+    `;
+
+    const feedbackResult = await client.query(feedbackQuery, [architectId]);
+
+    // 3. Return combined response
+    res.status(200).json({
+      architect,
+      feedback: feedbackResult.rows
+    });
+
+  } catch (error) {
+    console.error('Error fetching architect with feedback:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+// const delete_architech_by_id = async (req, res, next) => {
+//     try {
+//       const { id } = req.params; // get ID from URL
   
+//       if (!id) {
+//         return res.status(400).json({ message: 'User ID is required' });
+//       }
+  
+//       const query = 'DELETE FROM architech WHERE id = $1 RETURNING *';
+//       const result = await client.query(query, [id]);
+  
+//       if (result.rowCount === 0) {
+//         return res.status(404).json({ message: 'User not found' });
+//       }
+  
+//       res.status(200).json({
+//         success: true,
+//         message: 'User deleted successfully.',
+//         deletedUser: result.rows[0],
+//       });
+//     } catch (error) {
+//       console.error(error);
+//       next(error);
+//     }
+//   };
+  
+
 
 const update_architech_by_id = async (req, res, next) => {
     try {
@@ -139,24 +192,76 @@ const update_architech_by_id = async (req, res, next) => {
     }
   };
   
-// ?????????????????????????????????????????????????????????????????????//pagination
 
-const fetch_next_architech = async (req, res, next) => {
+
+  const fetch_next_architech = async (req, res, next) => {
+    try {
+      let { page } = req.params;   // get page from URL
+      page = parseInt(page) || 1;  // default page 1
+  
+      const limit = 5;
+      const offset = (page - 1) * limit;
+  
+      const query = 'SELECT * FROM architech ORDER BY id LIMIT $1 OFFSET $2;';
+      const result = await client.query(query, [limit, offset]);
+  
+      res.status(200).json({
+        success: true,
+        currentPage: page,
+        data: result.rows,
+        nextPage: result.rows.length === limit ? page + 1 : null,
+      });
+    } catch (error) {
+      console.error(error);
+      next(error);
+    }
+  };
+  
+  
+
+const fetch_all_architech = async (req, res, next) => {
   try {
-    let { page } = req.query;
-    page = parseInt(page) || 1;
+    const query = 'SELECT * FROM architech ORDER BY id;';
+    const result = await client.query(query);
 
-    const limit = 10;
+    res.status(200).json({
+      success: true,
+      total: result.rowCount,
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
+const fetch_architech_by_pagination = async (req, res, next) => {
+  try {
+    let { page = 1, limit = 5 } = req.query;
+
+    // Convert to integers and provide defaults
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    if (isNaN(page) || page < 1) page = 1;
+    if (isNaN(limit) || limit < 1) limit = 5;
+
     const offset = (page - 1) * limit;
 
+    // Get total count of rows
+    const countResult = await client.query('SELECT COUNT(*) FROM architech;');
+    const total = parseInt(countResult.rows[0].count, 10);
+
+    // Fetch paginated data
     const query = 'SELECT * FROM architech ORDER BY id LIMIT $1 OFFSET $2;';
     const result = await client.query(query, [limit, offset]);
 
     res.status(200).json({
       success: true,
+      total,                // total number of records in table
       currentPage: page,
+      totalPages: Math.ceil(total / limit),
       data: result.rows,
-      nextPage: result.rows.length === limit ? page + 1 : null,
     });
   } catch (error) {
     console.error(error);
@@ -186,6 +291,33 @@ const fetch_previous_architech = async (req, res, next) => {
       currentPage: page - 1,
       data: result.rows,
       previousPage: page - 2 > 0 ? page - 2 : null,
+    });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
+const delete_multiple_architechs = async (req, res, next) => {
+  try {
+    const { ids } = req.body; // expecting an array of UUID strings
+    console.log(ids);
+    
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: 'IDs are required in an array' });
+    }
+
+    const query = `DELETE FROM architech WHERE uuid = ANY($1::uuid[]) RETURNING *`;
+    const result = await client.query(query, [ids]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'No users found for deletion' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `${result.rowCount} architect's deleted successfully.`,
+      deletedUsers: result.rows,
     });
   } catch (error) {
     console.error(error);
@@ -262,5 +394,5 @@ const filter_architechs = async (req, res, next) => {
 
 
   
-  module.exports = { delete_architech_by_id,update_architech_by_id,fetch_previous_architech,fetch_next_architech,filter_architechs};
+  module.exports = {delete_multiple_architechs,fetch_all_architech,fetch_architech_by_pagination, getArchitectById,update_architech_by_id,fetch_previous_architech,fetch_next_architech,filter_architechs};
   

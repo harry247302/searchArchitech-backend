@@ -76,12 +76,10 @@ const architech_approval = async (req, res, next) => {
         profileImageUrl = uploadResult.secure_url;
         fs.unlinkSync(req.files.profile_image[0].path); 
       }
-  
-      // Step 4: Update admin in DB
+
       const result = await client.query(
         `UPDATE admin SET
            email = $1,
-           
            first_name = $2,
            last_name = $3,
            designation = $4,

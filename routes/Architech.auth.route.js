@@ -3,7 +3,7 @@ const { signUp, login } = require('../controllers/Architech.auth.controller');
 const multer = require('multer');
 const { protect } = require('../middleware/Auth.middleware');
 const upload = multer({ dest: 'uploads/' });
-const authRouter = express.Router();
+const  authRouter = express.Router();
 
 authRouter
   .post('/login', login)
