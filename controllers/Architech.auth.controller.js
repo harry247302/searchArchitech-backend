@@ -122,13 +122,13 @@ const login = async (req, res,next) => {
       { expiresIn: '1h' }
     );
 
-     res.cookie({
-      'token': token, 
-      httpOnly: true,                      
+    res.cookie('architectToken', token, {
+      httpOnly: false,                      
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'Strict',                  
-      maxAge: 24 * 60 * 60 * 1000            
+      maxAge: 60 * 1000
     });
+    
 
     
     res.status(200).json({
