@@ -5,29 +5,18 @@ const protect = asyncHandler(async(req,res,next)=>{
     let token;
 
     token = req.cookies.token;
-
-    if(token){
-        try {
-            console.log(process.env.JWT_SECRET,"---------------------------------------------------------------------");
-            
-            const decode = jwt.verify(token,process.env.JWT_SECRET);
-            const userId = decode.userId;            
-            const rows = await client.query(
-                `SELECT id, first_name, last_name, email, category, phone_number, profile_url, company_name
-                FROM users WHERE id = $1`,
-                [userId]
-            )
-            if(rows.length ===0){
-                res.status(401);
-                throw new Error('User not found')
-            }
-            req.user = rows[0]
-            next();
-        } catch (error) {
-            console.log(error)
-            res.status(401);
-            throw new error('No authrization')
-        }
+    
+    if(!token){
+        return res.status(403).json({message:"Token is required"});
+    }
+     try {
+        const decoded = jwt.verify(token,process.env.JWT_SECRET) 
+        req.user = decoded;
+        
+        
+        next();
+    } catch(error){
+        res.status(401).json({message:"Invalid or expired token"});
     }
 })
 

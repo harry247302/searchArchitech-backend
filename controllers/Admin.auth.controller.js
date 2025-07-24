@@ -172,6 +172,8 @@ console.log(token,"|||||||||||||||||||||||||||||||||||||||||||||||");
  const blockArchitech = async (req,res,next)=>{
     try {
       const {active_status,email} = req.body
+      console.log(active_status,email,"***********************************");
+      
       const userResult = await client.query('SELECT * FROM architech WHERE email = $1', [email]);
   
       const updateResult = await client.query(

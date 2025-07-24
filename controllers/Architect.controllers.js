@@ -194,28 +194,28 @@ const update_architech_by_id = async (req, res, next) => {
   
 
 
-  const fetch_next_architech = async (req, res, next) => {
-    try {
-      let { page } = req.params;   // get page from URL
-      page = parseInt(page) || 1;  // default page 1
+  // const fetch_next_architech = async (req, res, next) => {
+  //   try {
+  //     let { page } = req.params;   // get page from URL
+  //     page = parseInt(page) || 1;  // default page 1
   
-      const limit = 5;
-      const offset = (page - 1) * limit;
+  //     const limit = 5;
+  //     const offset = (page - 1) * limit;
   
-      const query = 'SELECT * FROM architech ORDER BY id LIMIT $1 OFFSET $2;';
-      const result = await client.query(query, [limit, offset]);
+  //     const query = 'SELECT * FROM architech ORDER BY id LIMIT $1 OFFSET $2;';
+  //     const result = await client.query(query, [limit, offset]);
   
-      res.status(200).json({
-        success: true,
-        currentPage: page,
-        data: result.rows,
-        nextPage: result.rows.length === limit ? page + 1 : null,
-      });
-    } catch (error) {
-      console.error(error);
-      next(error);
-    }
-  };
+  //     res.status(200).json({
+  //       success: true,
+  //       currentPage: page,
+  //       data: result.rows,
+  //       nextPage: result.rows.length === limit ? page + 1 : null,
+  //     });
+  //   } catch (error) {
+  //     console.error(error);
+  //     next(error);
+  //   }
+  // };
   
   
 
@@ -270,33 +270,33 @@ const fetch_architech_by_pagination = async (req, res, next) => {
 };
 
 
-const fetch_previous_architech = async (req, res, next) => {
-  try {
-    let { page } = req.query;
-    page = parseInt(page) || 1;
+// const fetch_previous_architech = async (req, res, next) => {
+//   try {
+//     let { page } = req.query;
+//     page = parseInt(page) || 1;
 
-    // Prevent going to page 0 or below
-    if (page <= 1) {
-      return res.status(400).json({ message: "Already at the first page." });
-    }
+//     // Prevent going to page 0 or below
+//     if (page <= 1) {
+//       return res.status(400).json({ message: "Already at the first page." });
+//     }
 
-    const limit = 10;
-    const offset = (page - 2) * limit; // Go to previous page
+//     const limit = 10;
+//     const offset = (page - 2) * limit; // Go to previous page
 
-    const query = 'SELECT * FROM architech ORDER BY id LIMIT $1 OFFSET $2;';
-    const result = await client.query(query, [limit, offset]);
+//     const query = 'SELECT * FROM architech ORDER BY id LIMIT $1 OFFSET $2;';
+//     const result = await client.query(query, [limit, offset]);
 
-    res.status(200).json({
-      success: true,
-      currentPage: page - 1,
-      data: result.rows,
-      previousPage: page - 2 > 0 ? page - 2 : null,
-    });
-  } catch (error) {
-    console.error(error);
-    next(error);
-  }
-};
+//     res.status(200).json({
+//       success: true,
+//       currentPage: page - 1,
+//       data: result.rows,
+//       previousPage: page - 2 > 0 ? page - 2 : null,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     next(error);
+//   }
+// };
 
 const delete_multiple_architechs = async (req, res, next) => {
   try {
@@ -394,5 +394,5 @@ const filter_architechs = async (req, res, next) => {
 
 
   
-  module.exports = {delete_multiple_architechs,fetch_all_architech,fetch_architech_by_pagination, getArchitectById,update_architech_by_id,fetch_previous_architech,fetch_next_architech,filter_architechs};
+  module.exports = {delete_multiple_architechs,fetch_all_architech,fetch_architech_by_pagination, getArchitectById,update_architech_by_id,filter_architechs};
   
