@@ -81,7 +81,7 @@ const signUp = async (req, res) => {
     // ✅ Set token in cookie
     res.cookie("token", token, {
       httpOnly: true,
-      maxAge: 60 * 1000, // 1 minute in milliseconds
+      maxAge: 7 * 24 * 60 * 60 , // 1 minute in milliseconds
       secure: process.env.NODE_ENV === "production", // send cookie only over HTTPS in production
       sameSite: "strict",
     });
@@ -114,7 +114,7 @@ const login = async (req, res,next) => {
 
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) {
-      return res.status(401).send('Incorrect password!');
+      return res.status(401).send({ success: false, message: 'Incorrect password!' });
     }
     const token = jwt.sign(
       { id: user.id, email: user.email },
@@ -126,8 +126,8 @@ const login = async (req, res,next) => {
       httpOnly: false,                      
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'Strict',                  
-      maxAge: 60 * 1000
-    });
+       maxAge: 60 * 60 * 1000   
+    }); 
     
 
     

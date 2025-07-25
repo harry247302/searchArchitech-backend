@@ -8,7 +8,7 @@ const bodyParser = require('body-parser');
 const { Client }  = require('pg');
 const authRouter = require('./routes/Architech.auth.route');
 const { client } = require('./config/client');
-const admin_authRouter = require('./routes/Admin.auth.router');
+
 const productRouter = require('./routes/Product.route');
 const architech_router = require('./routes/Architech.route');
 const cloudinaryRouter = require('./routes/Cloudinary.upload.route');
@@ -17,7 +17,8 @@ const feedback_router = require('./routes/Feedback.route');
 const project_router = require('./routes/Architech.projects.route');
 const otpVerificationRouter = require('./routes/Otp.verfication.route');
 const ticketRrouter = require('./routes/Tickets.router');
-
+const admin_authRouter = require('./routes/Admin.auth.router');
+const ContactRouter = require('./routes/Contact.form.route');
 
 dotenv.config({ path: './config/config.env' });
 app.use(morgan('dev'));
@@ -63,6 +64,7 @@ app.use('/projects',project_router)
 app.use('/otpVerification',otpVerificationRouter)
 app.use('/api/feedback',feedback_router)
 app.use('/tickets',ticketRrouter)
+app.use('/contact',ContactRouter)
 ///////////////////////////////////////////////////////////////server////////////////////
 app.get('/', (req, res) => {
   res.send('Pikachu...!');

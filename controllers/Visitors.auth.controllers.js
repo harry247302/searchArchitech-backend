@@ -29,7 +29,7 @@ const signup_visitor = async (req, res) => {
     );
 
       // Set token as HttpOnly cookie
-      res.cookie('token', token, {
+      res.cookie('visitorToken', token, {
         httpOnly: false,
         secure: process.env.NODE_ENV === 'production', // use HTTPS in prod
         sameSite: 'Strict',

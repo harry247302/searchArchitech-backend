@@ -1,10 +1,10 @@
 const express = require('express');
-const router = express.Router();
-const contactController = require('../controllers/contactController');
+const ContactRouter = express.Router();
+// const contactController = require('../controllers/contactController');
 const { contactForm, postContactFormDetails, deleteContact } = require('../controllers/Contact.form.controller');
 
-router.get('/contact', contactForm);
-router.post('/contact', postContactFormDetails);
-router.delete('/contact/:id', deleteContact);
+ContactRouter.get('/fetch', contactForm);
+ContactRouter.post('/submit', postContactFormDetails);
+ContactRouter.delete('/deleteById/:id', deleteContact);
 
-module.exports = router;
+module.exports = ContactRouter;

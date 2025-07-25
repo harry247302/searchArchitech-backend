@@ -6,7 +6,7 @@ const multer = require('multer')
 const upload = multer({ dest: 'uploads/' });
 
 
-project_router.post('/projects/create',protect,upload.fields([{ name: "image", maxCount: 1 },{ name: "videos", maxCount: 1 }]),create_project);
+project_router.post('/create',protect,upload.fields([{ name: "image", maxCount: 1 },{ name: "videos", maxCount: 1 }]),create_project);
 
 
 project_router.put('/update/:architect_id', update_projects_by_architect);

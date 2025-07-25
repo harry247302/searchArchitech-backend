@@ -151,14 +151,7 @@ const admin_login = async (req, res, next) => {
     res.status(200).json({
       message: 'Login successful',
       // hashedOtp,
-      user: {
-        phone_number: admin.phone_number,
-        profile_image: admin.profile_image,
-        email: admin.email,
-        first_name: admin.first_name,
-        last_name: admin.last_name,
-        designation: admin.designation,  // fixed typo here
-      }
+     token
     });
 
 console.log(token,"|||||||||||||||||||||||||||||||||||||||||||||||");
@@ -172,6 +165,8 @@ console.log(token,"|||||||||||||||||||||||||||||||||||||||||||||||");
  const blockArchitech = async (req,res,next)=>{
     try {
       const {active_status,email} = req.body
+      console.log(active_status,email,"***********************************");
+      
       const userResult = await client.query('SELECT * FROM architech WHERE email = $1', [email]);
   
       const updateResult = await client.query(

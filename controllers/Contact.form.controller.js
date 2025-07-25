@@ -9,29 +9,29 @@ const contactForm = async(req,res,next)=>{
         next(error)
     }
 }
+const postContactFormDetails = async (req, res, next) => {
+    const { first_name, last_name, email, message, phone } = req.body;
 
-const postContactFormDetails  = async (req,res,next)=>{
-    const {name ,email,subject,message} = req.body
-    
-    if(!name || !email || !subject || !message){
-        return res.status(400).json({error:'All fields are required'})
+    if (!first_name || !last_name || !email || !message || !phone) {
+        return res.status(400).json({ error: 'All fields are required' });
     }
-    
+
     try {
         const result = await client.query(
-            `INSERT INTO contact (name , email, subject, message)
-            VALUES($1, $2, $3, $4)
-            RETURNING *`,
-            [name,email,subject || null, message]
+            `INSERT INTO contact (first_name, last_name, email, phone, message)
+             VALUES ($1, $2, $3, $4, $5)
+             RETURNING *`,
+            [first_name, last_name, email, phone, message]
         );
-        res.status(201).json(result.rows[0]);
-
-
+        res.status(201).json({
+            message:"Form submited successfully!"
+        });
     } catch (error) {
-        console.log(error)
-        next(error)
+        console.log(error);
+        next(error);
     }
-}
+};
+
 
 const deleteContact = async (req, res) => {
   const { id } = req.params;
