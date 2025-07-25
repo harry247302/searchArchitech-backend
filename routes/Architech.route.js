@@ -6,7 +6,7 @@ const upload = multer({ dest: 'uploads/' });
 
 const architech_router = express.Router()
 
-architech_router.get('/fetchById/:architectId',protect,getArchitectById)
+architech_router.get('/fetchById',protect,getArchitectById)
 architech_router.get('/fetchByPagination',fetch_architech_by_pagination)
 architech_router.get('/fetchAll',fetch_all_architech)
 architech_router.post('/delete-multiple', protect, delete_multiple_architechs);

@@ -4,7 +4,9 @@ const cloudinary = require("../config/cloudinary");
 
 const getArchitectById = async (req, res) => {
   try {
-    const { architectId } = req.params;
+    console.log(req.user.id,"||||||||||||||||||||||||||||");
+    
+    const architectId = req.user.id;
 
     // 1. Fetch architect details from "architech" table
     const architectQuery = `
@@ -25,26 +27,26 @@ const getArchitectById = async (req, res) => {
     const architect = architectResult.rows[0];
 
     // 2. Fetch feedback with visitor info
-    const feedbackQuery = `
-      SELECT 
-        f.id AS feedback_id,
-        f.rating,
-        f.comment,
-        f.created_at,
-        v.name AS visitor_name,
-        v.email AS visitor_email
-      FROM feedback f
-      JOIN visitors v ON f.visitor_id = v.id
-      WHERE f.architech_id = $1
-      ORDER BY f.created_at DESC
-    `;
+    // const feedbackQuery = `
+    //   SELECT 
+    //     f.id AS feedback_id,
+    //     f.rating,
+    //     f.comment,
+    //     f.created_at,
+    //     v.name AS visitor_name,
+    //     v.email AS visitor_email
+    //   FROM feedback f
+    //   JOIN visitors v ON f.visitor_id = v.id
+    //   WHERE f.architech_id = $1
+    //   ORDER BY f.created_at DESC
+    // `;
 
-    const feedbackResult = await client.query(feedbackQuery, [architectId]);
+    // const feedbackResult = await client.query(feedbackQuery, [architectId]);
 
     // 3. Return combined response
     res.status(200).json({
       architect,
-      feedback: feedbackResult.rows
+      // feedback: feedbackResult.rows
     });
 
   } catch (error) {
@@ -237,7 +239,7 @@ const fetch_all_architech = async (req, res, next) => {
 
 const fetch_architech_by_pagination = async (req, res, next) => {
   try {
-    let { page = 1, limit = 5 } = req.query;
+    let { page, limit = 5 } = req.query;
 
     // Convert to integers and provide defaults
     page = parseInt(page);
@@ -247,6 +249,8 @@ const fetch_architech_by_pagination = async (req, res, next) => {
     if (isNaN(limit) || limit < 1) limit = 5;
 
     const offset = (page - 1) * limit;
+    console.log(page,"||||||||||||||||||||||||||||||");
+    
 
     // Get total count of rows
     const countResult = await client.query('SELECT COUNT(*) FROM architech;');
