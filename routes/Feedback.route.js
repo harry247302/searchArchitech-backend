@@ -3,7 +3,7 @@ const { submitFeedback, getFeedbackByArchitect } = require('../controllers/Feedb
 const feedback_router = express.Router()
 
 
-feedback_router.post('/', submitFeedback);
+feedback_router.post('/submit', submitFeedback);
 feedback_router.get('/get-feedback/:architectId', getFeedbackByArchitect);
 
 

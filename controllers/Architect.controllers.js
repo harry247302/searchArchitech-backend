@@ -4,7 +4,7 @@ const cloudinary = require("../config/cloudinary");
 
 const getArchitectById = async (req, res) => {
   try {
-    console.log(req.user.id,"||||||||||||||||||||||||||||");
+    // console.log(req.user.id,"||||||||||||||||||||||||||||");
     
     const architectId = req.user.id;
 
@@ -55,6 +55,59 @@ const getArchitectById = async (req, res) => {
   }
 };
 
+
+const getArchitectProfileById = async (req, res) => {
+  try {
+
+    
+    const architectId = req.params.uuid;
+
+    // 1. Fetch architect details from "architech" table
+    const architectQuery = `
+      SELECT 
+        id, first_name, last_name, category, price, phone_number, email,
+        street_address, apartment, city, postal_code, company_name, gst_no,
+        profile_url, company_brochure_url, created_at, active_status, state_name,uuid
+      FROM architech
+      WHERE uuid = $1
+    `;
+
+    const architectResult = await client.query(architectQuery, [architectId]);
+
+    if (architectResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Architect not found' });
+    }
+
+    const architect = architectResult.rows[0];
+
+    // 2. Fetch feedback with visitor info
+    // const feedbackQuery = `
+    //   SELECT 
+    //     f.id AS feedback_id,
+    //     f.rating,
+    //     f.comment,
+    //     f.created_at,
+    //     v.name AS visitor_name,
+    //     v.email AS visitor_email
+    //   FROM feedback f
+    //   JOIN visitors v ON f.visitor_id = v.id
+    //   WHERE f.architech_id = $1
+    //   ORDER BY f.created_at DESC
+    // `;
+
+    // const feedbackResult = await client.query(feedbackQuery, [architectId]);
+
+    // 3. Return combined response
+    res.status(200).json({
+      architect,
+      // feedback: feedbackResult.rows
+    });
+
+  } catch (error) {
+    console.error('Error fetching architect with feedback:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
 // const delete_architech_by_id = async (req, res, next) => {
 //     try {
@@ -398,5 +451,5 @@ const filter_architechs = async (req, res, next) => {
 
 
   
-  module.exports = {delete_multiple_architechs,fetch_all_architech,fetch_architech_by_pagination, getArchitectById,update_architech_by_id,filter_architechs};
+  module.exports = {getArchitectProfileById, delete_multiple_architechs,fetch_all_architech,fetch_architech_by_pagination, getArchitectById,update_architech_by_id,filter_architechs};
   

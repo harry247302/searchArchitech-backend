@@ -1,10 +1,11 @@
 const express = require('express');
 const { getAllVisitors, getVisitorById, updateVisitor, deleteVisitor } = require('../controllers/Visitors.controllers');
-const router = express.Router();
+const { protect } = require('../middleware/Auth.middleware');
+const VisitorRouter = express.Router();
 
-router.get('/visitors', getAllVisitors);
-router.get('/visitors/:id', getVisitorById);
-router.put('/visitors/:id', updateVisitor);
-router.delete('/visitors/:id', deleteVisitor);
+VisitorRouter.get('/visitors',protect, getAllVisitors);
+VisitorRouter.get('/getVisitorById',protect, getVisitorById);
+VisitorRouter.put('/visitors/:id',protect, updateVisitor);
+VisitorRouter.delete('/visitors/:id',protect, deleteVisitor);
 
-module.exports = router;
+module.exports = VisitorRouter;

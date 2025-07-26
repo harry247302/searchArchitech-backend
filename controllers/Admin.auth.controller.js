@@ -154,7 +154,7 @@ const admin_login = async (req, res, next) => {
      token
     });
 
-console.log(token,"|||||||||||||||||||||||||||||||||||||||||||||||");
+// console.log(token,"|||||||||||||||||||||||||||||||||||||||||||||||");
 
   } catch (err) {
     console.error(err);

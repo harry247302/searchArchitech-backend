@@ -12,6 +12,7 @@ const otpVerfication = async(req,res,next)=>{
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const salt = await bcrypt.genSalt(10);
     const hashedOtp = await bcrypt.hash(otp, salt);
+// console.log(hashedOtp,"|||||||||||||||||||||||||||||||");
 
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -38,20 +39,22 @@ const otpVerfication = async(req,res,next)=>{
     const info = await transporter.sendMail(mailOptions);
     console.log("Email sent:", info.response);
    
-    res.cookie('Otp', hashedOtp, {
-    path: '/',
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'Strict',
-    maxAge: 60 * 1000
-  });
-
+      res.cookie('Otp', hashedOtp, {
+      path: '/',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      maxAge: 60 * 1000
+    });
+    
+    console.log(hashedOtp);
+  
     res.status(200).json({
       message: "OTP sent successfully!",
       hashedOtp, 
     });
     } catch (error) {
         console.log(error)
-        // next(error)
+        next(error)
     }
 }
 
