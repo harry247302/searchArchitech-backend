@@ -4,8 +4,8 @@ const cloudinary = require("../config/cloudinary");
 
 const getArchitectById = async (req, res) => {
   try {
-    console.log(req.user.id,"||||||||||||||||||||||||||||");
-    
+    console.log(req.user.id, "||||||||||||||||||||||||||||");
+
     const architectId = req.user.id;
 
     // 1. Fetch architect details from "architech" table
@@ -21,14 +21,14 @@ const getArchitectById = async (req, res) => {
     const architectResult = await client.query(architectQuery, [architectId]);
 
     if (architectResult.rows.length === 0) {
-      return res.status(404).json({ message: 'Architect not found' });
+      return res.status(404).json({ message: "Architect not found" });
     }
 
     const architect = architectResult.rows[0];
 
     // 2. Fetch feedback with visitor info
     // const feedbackQuery = `
-    //   SELECT 
+    //   SELECT
     //     f.id AS feedback_id,
     //     f.rating,
     //     f.comment,
@@ -48,29 +48,27 @@ const getArchitectById = async (req, res) => {
       architect,
       // feedback: feedbackResult.rows
     });
-
   } catch (error) {
-    console.error('Error fetching architect with feedback:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error fetching architect with feedback:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
-
 
 // const delete_architech_by_id = async (req, res, next) => {
 //     try {
 //       const { id } = req.params; // get ID from URL
-  
+
 //       if (!id) {
 //         return res.status(400).json({ message: 'User ID is required' });
 //       }
-  
+
 //       const query = 'DELETE FROM architech WHERE id = $1 RETURNING *';
 //       const result = await client.query(query, [id]);
-  
+
 //       if (result.rowCount === 0) {
 //         return res.status(404).json({ message: 'User not found' });
 //       }
-  
+
 //       res.status(200).json({
 //         success: true,
 //         message: 'User deleted successfully.',
@@ -81,149 +79,294 @@ const getArchitectById = async (req, res) => {
 //       next(error);
 //     }
 //   };
-  
 
+// const update_architech_by_id = async (req, res, next) => {
+//     try {
+//       const { id } = req.params;
+
+//       const {
+//         first_name,
+//         last_name,
+//         category,
+//         price,
+//         phone_number,
+//         email,
+//         password_hash,
+//         street_address,
+//         apartment,
+//         city,
+//         postal_code,
+//         company_name,
+//         gst_no,
+//         state_name,
+
+//       } = req.body;
+
+//       if (!id) {
+//         return res.status(400).json({ message: 'User ID is required' });
+//       }
+
+//       let profileUrl = null;
+//       let brochureUrl = null;
+
+//       if (req.files?.profile_url?.[0]) {
+//         const uploadResult = await cloudinary.uploader.upload(req.files.profile_url[0].path, {
+//           folder: 'architech_profiles'
+//         });
+//         profileUrl = uploadResult.secure_url;
+//         fs.unlinkSync(req.files.profile_url[0].path);
+//       }
+
+//       if (req.files?.company_brochure_url?.[0]) {
+//         const uploadResult = await cloudinary.uploader.upload(req.files.company_brochure_url[0].path, {
+//           folder: 'architech_brochures',
+//           resource_type: 'auto'
+//         });
+//         brochureUrl = uploadResult.secure_url;
+//         fs.unlinkSync(req.files.company_brochure_url[0].path);
+//       }
+
+//       const existingUser = await client.query('SELECT * FROM architech WHERE id = $1', [id]);
+//       if (existingUser.rows.length === 0) {
+//         return res.status(404).json({ message: 'User not found' });
+//       }
+
+//       const existing = existingUser.rows[0];
+
+//       const query = `
+//         UPDATE architech
+//         SET
+//           first_name = $1,
+//           last_name = $2,
+//           category = $3,
+//           price = $4,
+//           phone_number = $5,
+//           email = $6,
+//           password_hash = $7,
+//           street_address = $8,
+//           apartment = $9,
+//           city = $10,
+//           postal_code = $11,
+//           company_name = $12,
+//           gst_no = $13,
+//           profile_url = $14,
+//           company_brochure_url = $15,
+//           state_name = $16
+//         WHERE id = $17
+//         RETURNING *;
+//       `;
+
+//       const values = [
+//         first_name || existing.first_name,
+//         last_name || existing.last_name,
+//         category || existing.category,
+//         price || existing.price,
+//         phone_number || existing.phone_number,
+//         email || existing.email,
+//         password_hash || existing.password_hash,
+//         street_address || existing.street_address,
+//         apartment || existing.apartment,
+//         city || existing.city,
+//         postal_code || existing.postal_code,
+//         company_name || existing.company_name,
+//         gst_no || existing.gst_no,
+//         profileUrl || existing.profile_url,
+//         brochureUrl || existing.company_brochure_url,
+//         state_name || existing.state_name,
+//         id
+//       ];
+
+//       const result = await client.query(query, values);
+
+//       res.status(200).json({
+//         success: true,
+//         message: 'User updated successfully.',
+//         updatedUser: result.rows[0],
+//       });
+
+//     } catch (error) {
+//       console.error("Error updating architect:", error);
+//       next(error);
+//     }
+//   };
 
 const update_architech_by_id = async (req, res, next) => {
-    try {
-      const { id } = req.params;
-  
-      const {
-        first_name,
-        last_name,
-        category,
-        price,
-        phone_number,
-        email,
-        password_hash,
-        street_address,
-        apartment,
-        city,
-        postal_code,
-        company_name,
-        gst_no,
-        state_name,
-        
-      } = req.body;
-  
-      if (!id) {
-        return res.status(400).json({ message: 'User ID is required' });
-      }
-  
-      let profileUrl = null;
-      let brochureUrl = null;
-  
-      if (req.files?.profile_url?.[0]) {
-        const uploadResult = await cloudinary.uploader.upload(req.files.profile_url[0].path, {
-          folder: 'architech_profiles'
-        });
-        profileUrl = uploadResult.secure_url;
-        fs.unlinkSync(req.files.profile_url[0].path);
-      }
-  
-      if (req.files?.company_brochure_url?.[0]) {
-        const uploadResult = await cloudinary.uploader.upload(req.files.company_brochure_url[0].path, {
-          folder: 'architech_brochures',
-          resource_type: 'auto'
-        });
-        brochureUrl = uploadResult.secure_url;
-        fs.unlinkSync(req.files.company_brochure_url[0].path);
-      }
-  
-      const existingUser = await client.query('SELECT * FROM architech WHERE id = $1', [id]);
-      if (existingUser.rows.length === 0) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-  
-      const existing = existingUser.rows[0];
-  
-      const query = `
-        UPDATE architech
-        SET 
-          first_name = $1,
-          last_name = $2,
-          category = $3,
-          price = $4,
-          phone_number = $5,
-          email = $6,
-          password_hash = $7,
-          street_address = $8,
-          apartment = $9,
-          city = $10,
-          postal_code = $11,
-          company_name = $12,
-          gst_no = $13,
-          profile_url = $14,
-          company_brochure_url = $15,
-          state_name = $16
-        WHERE id = $17
-        RETURNING *;
-      `;
-  
-      const values = [
-        first_name || existing.first_name,
-        last_name || existing.last_name,
-        category || existing.category,
-        price || existing.price,
-        phone_number || existing.phone_number,
-        email || existing.email,
-        password_hash || existing.password_hash,
-        street_address || existing.street_address,
-        apartment || existing.apartment,
-        city || existing.city,
-        postal_code || existing.postal_code,
-        company_name || existing.company_name,
-        gst_no || existing.gst_no,
-        profileUrl || existing.profile_url,
-        brochureUrl || existing.company_brochure_url,
-        state_name || existing.state_name,
-        id
-      ];
-  
-      const result = await client.query(query, values);
-  
-      res.status(200).json({
-        success: true,
-        message: 'User updated successfully.',
-        updatedUser: result.rows[0],
-      });
-  
-    } catch (error) {
-      console.error("Error updating architect:", error);
-      next(error);
+  try {
+    const { id } = req.params;
+
+    const {
+      first_name,
+      last_name,
+      category,
+      price,
+      phone_number,
+      email,
+      password_hash,
+      street_address,
+      apartment,
+      city,
+      postal_code,
+      company_name,
+      gst_no,
+      state_name,
+      instagram_link,
+      linkedin_link,
+      facebook_link,
+      other_link,
+      experience,
+      average_rating,
+      description,
+      skills,
+    } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ message: "User ID is required" });
     }
-  };
-  
 
+    let profileUrl = null;
+    let brochureUrl = null;
 
-  // const fetch_next_architech = async (req, res, next) => {
-  //   try {
-  //     let { page } = req.params;   // get page from URL
-  //     page = parseInt(page) || 1;  // default page 1
-  
-  //     const limit = 5;
-  //     const offset = (page - 1) * limit;
-  
-  //     const query = 'SELECT * FROM architech ORDER BY id LIMIT $1 OFFSET $2;';
-  //     const result = await client.query(query, [limit, offset]);
-  
-  //     res.status(200).json({
-  //       success: true,
-  //       currentPage: page,
-  //       data: result.rows,
-  //       nextPage: result.rows.length === limit ? page + 1 : null,
-  //     });
-  //   } catch (error) {
-  //     console.error(error);
-  //     next(error);
-  //   }
-  // };
-  
-  
+    // Profile Image Upload
+    if (req.files?.profile_url?.[0]) {
+      const uploadResult = await cloudinary.uploader.upload(
+        req.files.profile_url[0].path,
+        {
+          folder: "architech_profiles",
+        }
+      );
+      profileUrl = uploadResult.secure_url;
+      fs.unlinkSync(req.files.profile_url[0].path);
+    }
+
+    // Brochure Upload
+    if (req.files?.company_brochure_url?.[0]) {
+      const uploadResult = await cloudinary.uploader.upload(
+        req.files.company_brochure_url[0].path,
+        {
+          folder: "architech_brochures",
+          resource_type: "auto",
+        }
+      );
+      brochureUrl = uploadResult.secure_url;
+      fs.unlinkSync(req.files.company_brochure_url[0].path);
+    }
+
+    const existingUser = await client.query(
+      "SELECT * FROM architech WHERE id = $1",
+      [id]
+    );
+    if (existingUser.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const existing = existingUser.rows[0];
+
+    // Limit description to 500 chars
+    const trimmedDescription =
+      description?.slice(0, 500) || existing.description;
+
+    // Limit skills to 4 only
+    const processedSkills = Array.isArray(skills)
+      ? skills.slice(0, 4)
+      : existing.skills;
+
+    const query = `
+      UPDATE architech SET
+        first_name = $1,
+        last_name = $2,
+        category = $3,
+        price = $4,
+        phone_number = $5,
+        email = $6,
+        password_hash = $7,
+        street_address = $8,
+        apartment = $9,
+        city = $10,
+        postal_code = $11,
+        company_name = $12,
+        gst_no = $13,
+        profile_url = $14,
+        company_brochure_url = $15,
+        state_name = $16,
+        instagram_link = $17,
+        linkedin_link = $18,
+        facebook_link = $19,
+        other_link = $20,
+        experience = $21,
+        average_rating = $22,
+        description = $23,
+        skills = $24
+      WHERE id = $25
+      RETURNING *;
+    `;
+
+    const values = [
+      first_name || existing.first_name,
+      last_name || existing.last_name,
+      category || existing.category,
+      price || existing.price,
+      phone_number || existing.phone_number,
+      email || existing.email,
+      password_hash || existing.password_hash,
+      street_address || existing.street_address,
+      apartment || existing.apartment,
+      city || existing.city,
+      postal_code || existing.postal_code,
+      company_name || existing.company_name,
+      gst_no || existing.gst_no,
+      profileUrl || existing.profile_url,
+      brochureUrl || existing.company_brochure_url,
+      state_name || existing.state_name,
+      instagram_link || existing.instagram_link,
+      linkedin_link || existing.linkedin_link,
+      facebook_link || existing.facebook_link,
+      other_link || existing.other_link,
+      experience ?? existing.experience,
+      average_rating ?? existing.average_rating,
+      trimmedDescription,
+      processedSkills,
+      id,
+    ];
+
+    const result = await client.query(query, values);
+
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully.",
+      updatedUser: result.rows[0],
+    });
+  } catch (error) {
+    console.error("Error updating architect:", error);
+    next(error);
+  }
+};
+
+// const fetch_next_architech = async (req, res, next) => {
+//   try {
+//     let { page } = req.params;   // get page from URL
+//     page = parseInt(page) || 1;  // default page 1
+
+//     const limit = 5;
+//     const offset = (page - 1) * limit;
+
+//     const query = 'SELECT * FROM architech ORDER BY id LIMIT $1 OFFSET $2;';
+//     const result = await client.query(query, [limit, offset]);
+
+//     res.status(200).json({
+//       success: true,
+//       currentPage: page,
+//       data: result.rows,
+//       nextPage: result.rows.length === limit ? page + 1 : null,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     next(error);
+//   }
+// };
 
 const fetch_all_architech = async (req, res, next) => {
   try {
-    const query = 'SELECT * FROM architech ORDER BY id;';
+    const query = "SELECT * FROM architech ORDER BY id;";
     const result = await client.query(query);
 
     res.status(200).json({
@@ -249,20 +392,19 @@ const fetch_architech_by_pagination = async (req, res, next) => {
     if (isNaN(limit) || limit < 1) limit = 5;
 
     const offset = (page - 1) * limit;
-    console.log(page,"||||||||||||||||||||||||||||||");
-    
+    console.log(page, "||||||||||||||||||||||||||||||");
 
     // Get total count of rows
-    const countResult = await client.query('SELECT COUNT(*) FROM architech;');
+    const countResult = await client.query("SELECT COUNT(*) FROM architech;");
     const total = parseInt(countResult.rows[0].count, 10);
 
     // Fetch paginated data
-    const query = 'SELECT * FROM architech ORDER BY id LIMIT $1 OFFSET $2;';
+    const query = "SELECT * FROM architech ORDER BY id LIMIT $1 OFFSET $2;";
     const result = await client.query(query, [limit, offset]);
 
     res.status(200).json({
       success: true,
-      total,                // total number of records in table
+      total, // total number of records in table
       currentPage: page,
       totalPages: Math.ceil(total / limit),
       data: result.rows,
@@ -272,7 +414,6 @@ const fetch_architech_by_pagination = async (req, res, next) => {
     next(error);
   }
 };
-
 
 // const fetch_previous_architech = async (req, res, next) => {
 //   try {
@@ -306,16 +447,16 @@ const delete_multiple_architechs = async (req, res, next) => {
   try {
     const { ids } = req.body; // expecting an array of UUID strings
     console.log(ids);
-    
+
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
-      return res.status(400).json({ message: 'IDs are required in an array' });
+      return res.status(400).json({ message: "IDs are required in an array" });
     }
 
     const query = `DELETE FROM architech WHERE uuid = ANY($1::uuid[]) RETURNING *`;
     const result = await client.query(query, [ids]);
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ message: 'No users found for deletion' });
+      return res.status(404).json({ message: "No users found for deletion" });
     }
 
     res.status(200).json({
@@ -329,7 +470,6 @@ const delete_multiple_architechs = async (req, res, next) => {
   }
 };
 
-
 //////////////////////////////////////////////////////////////////////////////////////filteratoin
 const filter_architechs = async (req, res, next) => {
   try {
@@ -340,7 +480,7 @@ const filter_architechs = async (req, res, next) => {
       city,
       postal_code,
       company_name,
-      state_name
+      state_name,
     } = req.query;
 
     let query = `SELECT * FROM architech WHERE 1=1`;
@@ -389,14 +529,17 @@ const filter_architechs = async (req, res, next) => {
       data: result.rows,
       count: result.rowCount,
     });
-
   } catch (error) {
     console.error("Error filtering architects:", error);
     next(error);
   }
 };
 
-
-  
-  module.exports = {delete_multiple_architechs,fetch_all_architech,fetch_architech_by_pagination, getArchitectById,update_architech_by_id,filter_architechs};
-  
+module.exports = {
+  delete_multiple_architechs,
+  fetch_all_architech,
+  fetch_architech_by_pagination,
+  getArchitectById,
+  update_architech_by_id,
+  filter_architechs,
+};

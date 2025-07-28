@@ -25,8 +25,8 @@ app.use(morgan('dev'));
 app.use(cookieParser());
 
 app.use(cors({
-  origin: 'http://localhost:3000',  
-  credentials: true                
+  origin: 'http://localhost:3000',  // ✅ exact origin, NOT '*'
+  credentials: true                 // ✅ allow cookies/session
 }));
 
 app.use(bodyParser.json());
