@@ -72,19 +72,19 @@ const signUp = async (req, res) => {
     const user = newUser.rows[0];
 
     // ✅ Generate JWT token (expires in 1 minute)
-    const token = jwt.sign(
-      { id: user.id, email: user.email },
-      process.env.JWT_SECRET || "your_jwt_secret", // use strong secret in production
-      { expiresIn: "1m" } // 1 minute
-    );
+    // const token = jwt.sign(
+    //   { id: user.id, email: user.email },
+    //   process.env.JWT_SECRET || "your_jwt_secret", // use strong secret in production
+    //   { expiresIn: "1h" } // 1 minute
+    // );
 
     // ✅ Set token in cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 , // 1 minute in milliseconds
-      secure: process.env.NODE_ENV === "production", // send cookie only over HTTPS in production
-      sameSite: "strict",
-    });
+    // res.cookie("token", token, {
+    //   httpOnly: true,
+    //   maxAge: 7 * 24 * 60 * 60 , // 1 minute in milliseconds
+    //   secure: process.env.NODE_ENV === "production", // send cookie only over HTTPS in production
+    //   sameSite: "strict",
+    // });
 
     res.status(201).json({
       message: "Registered successfully",

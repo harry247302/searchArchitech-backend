@@ -358,7 +358,7 @@ const fetch_architech_by_pagination = async (req, res, next) => {
 const delete_multiple_architechs = async (req, res, next) => {
   try {
     const { ids } = req.body; // expecting an array of UUID strings
-    console.log(ids);
+    console.log(ids,"}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}");
     
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
       return res.status(400).json({ message: 'IDs are required in an array' });
@@ -396,23 +396,27 @@ const filter_architechs = async (req, res, next) => {
       state_name
     } = req.query;
 
+    console.log("Query received:", req.query);
+
     let query = `SELECT * FROM architech WHERE 1=1`;
     const values = [];
     let i = 1;
 
+    // 💰 Price filter
+    if (min_price && !isNaN(Number(min_price))) {
+      query += ` AND price >= $${i++}`;
+      values.push(Number(min_price));
+    }
+
+    if (max_price && !isNaN(Number(max_price))) {
+      query += ` AND price <= $${i++}`;
+      values.push(Number(max_price));
+    }
+
+    // 🏙️ Other filters
     if (category) {
       query += ` AND category ILIKE $${i++}`;
       values.push(`%${category}%`);
-    }
-
-    if (min_price) {
-      query += ` AND price >= $${i++}`;
-      values.push(min_price);
-    }
-
-    if (max_price) {
-      query += ` AND price <= $${i++}`;
-      values.push(max_price);
     }
 
     if (city) {
@@ -435,12 +439,17 @@ const filter_architechs = async (req, res, next) => {
       values.push(`%${state_name}%`);
     }
 
+    query += ` ORDER BY price ASC`;
+
+    console.log("🧪 Final Query:", query);
+    console.log("📦 Bound Values:", values);
+
     const result = await client.query(query, values);
 
     res.status(200).json({
       success: true,
       data: result.rows,
-      count: result.rowCount,
+      count: result.rowCount
     });
 
   } catch (error) {
@@ -448,6 +457,9 @@ const filter_architechs = async (req, res, next) => {
     next(error);
   }
 };
+
+
+
 
 
   
