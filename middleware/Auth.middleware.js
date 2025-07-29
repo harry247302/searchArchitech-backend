@@ -5,14 +5,16 @@ const protect = asyncHandler(async(req,res,next)=>{
     let token;
 
     token = req?.cookies?.token || req?.cookies?.architectToken || req?.cookies?.visitorToken;
-    console.log(token);
     
     if(!token){
         return res.status(403).json({message:"Token is required"});
     }
-     try {
+    try {
         const decoded = jwt.verify(token,process.env.JWT_SECRET) 
         req.user = decoded;
+        console.log(req.user );
+        
+
         
         
         next();

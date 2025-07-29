@@ -70,19 +70,20 @@ const create_project = async (req, res) => {
 };
 
 
-
 const get_projects_by_architect = async (req, res) => {
-  const { architect_id } = req.params;
+  const architect_uuid = req.user.uuid; // architect's UUID from middleware
+
+  console.log("Logged in user:", req.user);
 
   try {
     const result = await client.query(
-      'SELECT * FROM projects WHERE architect_id = $1 ORDER BY id DESC',
-      [architect_id]
+      'SELECT * FROM projects WHERE architect_uuid = $1 ORDER BY id DESC',
+      [architect_uuid]
     );
 
     res.status(200).json(result.rows);
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching projects:", error);
     res.status(500).json({ error: 'Failed to fetch projects' });
   }
 };

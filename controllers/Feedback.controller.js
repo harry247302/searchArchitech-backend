@@ -4,6 +4,8 @@ const { client } = require("../config/client");
 const  submitFeedback = async (req, res) => {
   try {
     const { visitor_id, architech_id, rating, comment } = req.body;
+    console.log(req.body,"---------------------------------------");
+    
 
     if (!visitor_id || !architech_id || !rating) {
       return res.status(400).json({ message: 'visitor_id, architech_id and rating are required' });
@@ -19,7 +21,7 @@ const  submitFeedback = async (req, res) => {
 
     res.status(201).json({ message: 'Feedback submitted', feedback: rows[0] });
   } catch (error) {
-    console.error('Error submitting feedback:', error);
+    console.log( error);
     res.status(500).json({ message: 'Server error' });
   }
 };
