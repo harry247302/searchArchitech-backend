@@ -106,7 +106,7 @@ const admin_login = async (req, res, next) => {
         designation: admin.designation,  // fixed typo here
       },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '7d' }
     );
 
     //  const { email } = req.body;
@@ -154,7 +154,7 @@ const admin_login = async (req, res, next) => {
      token
     });
 
-console.log(token,"|||||||||||||||||||||||||||||||||||||||||||||||");
+// console.log(token,"|||||||||||||||||||||||||||||||||||||||||||||||");
 
   } catch (err) {
     console.error(err);

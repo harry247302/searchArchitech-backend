@@ -13,7 +13,7 @@ project_router.put('/update/:architect_id', update_projects_by_architect);
 
 project_router.delete('/delete/:architect_id', delete_projects_by_architect);
 
-project_router.get('/fetch/:architectId', get_projects_by_architect);
+project_router.get('/fetchByArchitect', protect, get_projects_by_architect);
 
 project_router.get('/fetch', getAllProjects);
 

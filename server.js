@@ -19,14 +19,15 @@ const otpVerificationRouter = require('./routes/Otp.verfication.route');
 const ticketRrouter = require('./routes/Tickets.router');
 const admin_authRouter = require('./routes/Admin.auth.router');
 const ContactRouter = require('./routes/Contact.form.route');
+const VisitorRouter = require('./routes/Visitors.router');
 
 dotenv.config({ path: './config/config.env' });
 app.use(morgan('dev'));
 app.use(cookieParser());
 
 app.use(cors({
-  origin: 'http://localhost:3000',  // ✅ exact origin, NOT '*'
-  credentials: true                 // ✅ allow cookies/session
+  origin: ['http://localhost:3001', 'http://localhost:3000'],
+  credentials: true                
 }));
 
 app.use(bodyParser.json());
@@ -60,9 +61,10 @@ app.use('/product',productRouter)
 app.use('/architech',architech_router)
 app.use('/upload_files',cloudinaryRouter)
 app.use('/visitor_routers',visitor_routers)
+app.use('/visitor',VisitorRouter)
 app.use('/projects',project_router)
 app.use('/otpVerification',otpVerificationRouter)
-app.use('/api/feedback',feedback_router)
+app.use('/feedback',feedback_router)
 app.use('/tickets',ticketRrouter)
 app.use('/contact',ContactRouter)
 ///////////////////////////////////////////////////////////////server////////////////////

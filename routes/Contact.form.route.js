@@ -5,6 +5,6 @@ const { contactForm, postContactFormDetails, deleteContact } = require('../contr
 
 ContactRouter.get('/fetch', contactForm);
 ContactRouter.post('/submit', postContactFormDetails);
-ContactRouter.delete('/deleteById/:id', deleteContact);
+ContactRouter.delete('/deleteById', deleteContact);
 
 module.exports = ContactRouter;

@@ -85,7 +85,7 @@ const login_visitor = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: visitor.id, email: visitor.email },
+      { visitoruuid: visitor.visitoruuid, email: visitor.email },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
@@ -93,18 +93,18 @@ const login_visitor = async (req, res) => {
        maxAge: 60 * 1000,
         sameSite: 'Strict',
       });
-       res.cookie('token', token, {
-        maxAge: 60 * 1000,
+       res.cookie('visitorToken', token, {
+        maxAge: 24 * 60 * 60 * 1000,
         sameSite: 'Strict',
       });
 
       res.cookie('email', visitor.email, {
-       maxAge: 60 * 1000,
+        maxAge: 24 * 60 * 60 * 1000,
         sameSite: 'Strict',
       });
 
       res.cookie('visitorId', visitor.id, {
-      maxAge: 60 * 1000,
+        maxAge: 24 * 60 * 60 * 1000,
         sameSite: 'Strict',
       });
 
