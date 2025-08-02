@@ -67,8 +67,42 @@ const deleteVisitor = async (req, res) => {
   }
 };
 
+const getVisitorsByTodayTomorrow = async (req, res) => {
+  try {
+    const query = `
+      SELECT id, fullname, email, created_at
+      FROM visitors
+      WHERE DATE_TRUNC('month', created_at) = DATE_TRUNC('month', CURRENT_DATE)
+      ORDER BY created_at ASC;
+    `;
+
+    const result = await client.query(query);
+
+    const today = [];
+    const month = [];
+
+    const todayDate = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+    result.rows.forEach(visitor => {
+      const createdDate = visitor.created_at.toISOString().slice(0, 10);
+      
+      if (createdDate === todayDate) {
+        today.push(visitor);
+      }
+
+      month.push(visitor); // already filtered by current month in SQL
+    });
+
+    res.status(200).json({ today, month });
+  } catch (error) {
+    console.error('Error fetching visitors:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 
 module.exports = {
+  getVisitorsByTodayTomorrow,
     getAllVisitors,
     getVisitorById,
     updateVisitor,

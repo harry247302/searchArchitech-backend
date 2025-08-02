@@ -16,58 +16,94 @@ const getAllProjects = async (req, res) => {
   }
 };
 
-
 const create_project = async (req, res) => {
   const {
-    title, description, category, location,
-    start_date, end_date, budget, status
+    title,
+    description,
+    category,
+    location,
+    start_date,
+    end_date,
+    budget,
+    status,
   } = req.body;
 
-  const { architect_id } = req.params;
+  console.log("Received files:", req.files);
+
+  const architect_uuid = req.user.uuid;
+  const parsedBudget = parseFloat(budget);
+
+  if (isNaN(parsedBudget)) {
+    return res.status(400).json({ error: "Invalid budget value" });
+  }
 
   try {
-    let imageUrl = null;
-    let videoUrl = null;
-
-    if (req.files.image && req.files.image[0]) {
-      const imageUpload = await cloudinary.uploader.upload(req.files.image[0].path, {
-        folder: 'uploads',
-      });
-      imageUrl = imageUpload.secure_url;
-      fs.unlinkSync(req.files.image[0].path);
+    let imageUrls = [];
+    let videoUrls = [];
+    if (req.files && Array.isArray(req.files.images)) {
+      for (const file of req.files.images) {
+        try {
+          const uploadRes = await cloudinary.uploader.upload(file.path, {
+            folder: "uploads",
+          });
+          imageUrls.push(uploadRes.secure_url);
+          fs.unlinkSync(file.path);
+        } catch (err) {
+          console.error("Cloudinary image upload failed for", file.originalname, err);
+        }
+      }
     }
-
-    if (req.files.videos && req.files.videos[0]) {
-      const videoUpload = await cloudinary.uploader.upload(req.files.videos[0].path, {
-        folder: 'uploads',
-        resource_type: 'video'
-      });
-      videoUrl = videoUpload.secure_url;
-      fs.unlinkSync(req.files.videos[0].path);
+    
+    if (req.files && Array.isArray(req.files.videos)) {
+      for (const file of req.files.videos) {
+        try {
+          const uploadRes = await cloudinary.uploader.upload(file.path, {
+            folder: "uploads",
+            resource_type: "video",
+          });
+          videoUrls.push(uploadRes.secure_url);
+          fs.unlinkSync(file.path);
+        } catch (err) {
+          console.error("Cloudinary video upload failed for", file.originalname, err);
+        }
+      }
     }
+    
+
+    console.log("Uploaded image URLs::::::::::::::::::::::::", imageUrls);
+    console.log("Uploaded video URLs::::::::::::::::::::::;:", videoUrls);
 
     const result = await client.query(
       `INSERT INTO projects (
-        architect_id, title, description, category,
+        architect_uuid, title, description, category,
         location, start_date, end_date,
-        images, videos, budget, status
+        images, videos, budget, status,
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, ARRAY[$8], ARRAY[$9], $10, $11
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
       ) RETURNING *`,
       [
-        architect_id, title, description, category,
-        location, start_date, end_date,
-        imageUrl, videoUrl, budget, status
+        architect_uuid,
+        title,
+        description,
+        category,
+        location,
+        start_date,
+        end_date,
+        imageUrls,
+        videoUrls,
+        parsedBudget,
+        status,
       ]
     );
 
     res.status(201).json(result.rows[0]);
-
   } catch (error) {
     console.error("Create project error:", error);
-    res.status(500).json({ error: 'Failed to create project' });
+    res.status(500).json({ error: "Failed to create project" });
   }
 };
+
+
 
 
 const get_projects_by_architect = async (req, res) => {
@@ -165,13 +201,14 @@ const update_projects_by_architect = async (req, res) => {
 
 
 const delete_projects_by_architect = async (req, res) => {
-  const { architect_id } = req.params;
-
+  const { project_uuid } = req.params;  // ✅ Extract UUID string properly
+  
   try {
     const result = await client.query(
-      'DELETE FROM projects WHERE architect_id = $1 RETURNING *',
-      [architect_id]
+      'DELETE FROM projects WHERE project_uuid = $1 RETURNING *',
+      [project_uuid]
     );
+    console.log(result.rows,":::::::::::::::::::::::::::::::::::::::::::::::");
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'No projects found for this architect' });
@@ -183,6 +220,7 @@ const delete_projects_by_architect = async (req, res) => {
     res.status(500).json({ error: 'Failed to delete projects' });
   }
 };
+
 
 
 module.exports = {

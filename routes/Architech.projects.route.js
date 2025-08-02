@@ -5,13 +5,20 @@ const project_router = express.Router();
 const multer = require('multer')
 const upload = multer({ dest: 'uploads/' });
 
-
-project_router.post('/create',protect,upload.fields([{ name: "image", maxCount: 1 },{ name: "videos", maxCount: 1 }]),create_project);
-
+project_router.post(
+    '/create',
+    protect,
+    upload.fields([
+      { name: "images", maxCount: 10 },
+      { name: "videos", maxCount: 10 }
+    ]),
+    create_project
+  );
+  
 
 project_router.put('/update/:architect_id', update_projects_by_architect);
 
-project_router.delete('/delete/:architect_id', delete_projects_by_architect);
+project_router.delete('/delete/:project_uuid',protect, delete_projects_by_architect);
 
 project_router.get('/fetchByArchitect', protect, get_projects_by_architect);
 

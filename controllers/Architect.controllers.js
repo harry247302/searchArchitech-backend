@@ -4,53 +4,27 @@ const cloudinary = require("../config/cloudinary");
 
 const getArchitectById = async (req, res) => {
   try {
-    // console.log(req.user.id,"||||||||||||||||||||||||||||");
-    
-    const architectId = req.user.id;
-
-    // 1. Fetch architect details from "architech" table
-    const architectQuery = `
-      SELECT 
-        id, first_name, last_name, category, price, phone_number, email,
-        street_address, apartment, city, postal_code, company_name, gst_no,
-        profile_url, company_brochure_url, created_at, active_status, state_name
-      FROM architech
-      WHERE id = $1
-    `;
-
-    const architectResult = await client.query(architectQuery, [architectId]);
-
-    if (architectResult.rows.length === 0) {
-      return res.status(404).json({ message: "Architect not found" });
+    const architectUuid = req.user.uuid;
+    if (!architectUuid) {
+      return res.status(400).json({ message: 'Architect UUID is required' });
     }
 
-    const architect = architectResult.rows[0];
+    const query = `
+      SELECT * FROM architech WHERE uuid = $1
+    `;
 
-    // 2. Fetch feedback with visitor info
-    // const feedbackQuery = `
-    //   SELECT
-    //     f.id AS feedback_id,
-    //     f.rating,
-    //     f.comment,
-    //     f.created_at,
-    //     v.name AS visitor_name,
-    //     v.email AS visitor_email
-    //   FROM feedback f
-    //   JOIN visitors v ON f.visitor_id = v.id
-    //   WHERE f.architech_id = $1
-    //   ORDER BY f.created_at DESC
-    // `;
+    const result = await client.query(query, [architectUuid]);
 
-    // const feedbackResult = await client.query(feedbackQuery, [architectId]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Architect not found' });
+    }
 
-    // 3. Return combined response
     res.status(200).json({
-      architect,
-      // feedback: feedbackResult.rows
+      architect: result.rows[0],
     });
   } catch (error) {
-    console.error("Error fetching architect with feedback:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error('Error fetching architect:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -133,224 +107,63 @@ const getArchitectProfileById = async (req, res) => {
 //       next(error);
 //     }
 //   };
-
-// const update_architech_by_id = async (req, res, next) => {
-//     try {
-//       const { id } = req.params;
-
-//       const {
-//         first_name,
-//         last_name,
-//         category,
-//         price,
-//         phone_number,
-//         email,
-//         password_hash,
-//         street_address,
-//         apartment,
-//         city,
-//         postal_code,
-//         company_name,
-//         gst_no,
-//         state_name,
-
-//       } = req.body;
-
-//       if (!id) {
-//         return res.status(400).json({ message: 'User ID is required' });
-//       }
-
-//       let profileUrl = null;
-//       let brochureUrl = null;
-
-//       if (req.files?.profile_url?.[0]) {
-//         const uploadResult = await cloudinary.uploader.upload(req.files.profile_url[0].path, {
-//           folder: 'architech_profiles'
-//         });
-//         profileUrl = uploadResult.secure_url;
-//         fs.unlinkSync(req.files.profile_url[0].path);
-//       }
-
-//       if (req.files?.company_brochure_url?.[0]) {
-//         const uploadResult = await cloudinary.uploader.upload(req.files.company_brochure_url[0].path, {
-//           folder: 'architech_brochures',
-//           resource_type: 'auto'
-//         });
-//         brochureUrl = uploadResult.secure_url;
-//         fs.unlinkSync(req.files.company_brochure_url[0].path);
-//       }
-
-//       const existingUser = await client.query('SELECT * FROM architech WHERE id = $1', [id]);
-//       if (existingUser.rows.length === 0) {
-//         return res.status(404).json({ message: 'User not found' });
-//       }
-
-//       const existing = existingUser.rows[0];
-
-//       const query = `
-//         UPDATE architech
-//         SET
-//           first_name = $1,
-//           last_name = $2,
-//           category = $3,
-//           price = $4,
-//           phone_number = $5,
-//           email = $6,
-//           password_hash = $7,
-//           street_address = $8,
-//           apartment = $9,
-//           city = $10,
-//           postal_code = $11,
-//           company_name = $12,
-//           gst_no = $13,
-//           profile_url = $14,
-//           company_brochure_url = $15,
-//           state_name = $16
-//         WHERE id = $17
-//         RETURNING *;
-//       `;
-
-//       const values = [
-//         first_name || existing.first_name,
-//         last_name || existing.last_name,
-//         category || existing.category,
-//         price || existing.price,
-//         phone_number || existing.phone_number,
-//         email || existing.email,
-//         password_hash || existing.password_hash,
-//         street_address || existing.street_address,
-//         apartment || existing.apartment,
-//         city || existing.city,
-//         postal_code || existing.postal_code,
-//         company_name || existing.company_name,
-//         gst_no || existing.gst_no,
-//         profileUrl || existing.profile_url,
-//         brochureUrl || existing.company_brochure_url,
-//         state_name || existing.state_name,
-//         id
-//       ];
-
-//       const result = await client.query(query, values);
-
-//       res.status(200).json({
-//         success: true,
-//         message: 'User updated successfully.',
-//         updatedUser: result.rows[0],
-//       });
-
-//     } catch (error) {
-//       console.error("Error updating architect:", error);
-//       next(error);
-//     }
-//   };
-
+  
 const update_architech_by_id = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const uuid = req.user.uuid;
+    console.log("UUID from middleware:", uuid);
+    console.log("Request body:", req.body);
 
-    const {
-      first_name,
-      last_name,
-      category,
-      price,
-      phone_number,
-      email,
-      password_hash,
-      street_address,
-      apartment,
-      city,
-      postal_code,
-      company_name,
-      gst_no,
-      state_name,
-      instagram_link,
-      linkedin_link,
-      facebook_link,
-      other_link,
-      experience,
-      average_rating,
-      description,
-      skills,
-    } = req.body;
-
-    if (!id) {
-      return res.status(400).json({ message: "User ID is required" });
+    if (!uuid || typeof uuid !== 'string' || uuid.trim() === '') {
+      return res.status(400).json({ message: 'Valid UUID is required' });
     }
 
+    // File uploads
     let profileUrl = null;
     let brochureUrl = null;
 
-    // Profile Image Upload
     if (req.files?.profile_url?.[0]) {
-      const uploadResult = await cloudinary.uploader.upload(
-        req.files.profile_url[0].path,
-        {
-          folder: "architech_profiles",
-        }
-      );
+      const uploadResult = await cloudinary.uploader.upload(req.files.profile_url[0].path, {
+        folder: 'architech_profiles'
+      });
       profileUrl = uploadResult.secure_url;
       fs.unlinkSync(req.files.profile_url[0].path);
     }
 
-    // Brochure Upload
     if (req.files?.company_brochure_url?.[0]) {
-      const uploadResult = await cloudinary.uploader.upload(
-        req.files.company_brochure_url[0].path,
-        {
-          folder: "architech_brochures",
-          resource_type: "auto",
-        }
-      );
+      const uploadResult = await cloudinary.uploader.upload(req.files.company_brochure_url[0].path, {
+        folder: 'architech_brochures',
+        resource_type: 'auto'
+      });
       brochureUrl = uploadResult.secure_url;
       fs.unlinkSync(req.files.company_brochure_url[0].path);
     }
 
-    const existingUser = await client.query(
-      "SELECT * FROM architech WHERE id = $1",
-      [id]
-    );
+    // Fetch existing user by UUID
+    const existingUser = await client.query('SELECT * FROM architech WHERE uuid = $1', [uuid]);
     if (existingUser.rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: 'User not found' });
     }
 
     const existing = existingUser.rows[0];
 
-    // Limit description to 500 chars
-    const trimmedDescription =
-      description?.slice(0, 500) || existing.description;
-
-    // Limit skills to 4 only
-    const processedSkills = Array.isArray(skills)
-      ? skills.slice(0, 4)
-      : existing.skills;
+    const {
+      first_name, last_name, category, price, phone_number, email, password_hash,
+      street_address, apartment, city, postal_code, company_name, gst_no,
+      state_name, instagram_link, linkedin_link, facebook_link, other_link,
+      experience, average_rating, description, skills
+    } = req.body;
 
     const query = `
-      UPDATE architech SET
-        first_name = $1,
-        last_name = $2,
-        category = $3,
-        price = $4,
-        phone_number = $5,
-        email = $6,
-        password_hash = $7,
-        street_address = $8,
-        apartment = $9,
-        city = $10,
-        postal_code = $11,
-        company_name = $12,
-        gst_no = $13,
-        profile_url = $14,
-        company_brochure_url = $15,
-        state_name = $16,
-        instagram_link = $17,
-        linkedin_link = $18,
-        facebook_link = $19,
-        other_link = $20,
-        experience = $21,
-        average_rating = $22,
-        description = $23,
-        skills = $24
-      WHERE id = $25
+      UPDATE architech
+      SET 
+        first_name = $1, last_name = $2, category = $3, price = $4,
+        phone_number = $5, email = $6, password_hash = $7, street_address = $8,
+        apartment = $9, city = $10, postal_code = $11, company_name = $12,
+        gst_no = $13, profile_url = $14, company_brochure_url = $15, state_name = $16,
+        instagram_link = $17, linkedin_link = $18, facebook_link = $19, other_link = $20,
+        experience = $21, average_rating = $22, description = $23, skills = $24
+      WHERE uuid = $25
       RETURNING *;
     `;
 
@@ -375,25 +188,29 @@ const update_architech_by_id = async (req, res, next) => {
       linkedin_link || existing.linkedin_link,
       facebook_link || existing.facebook_link,
       other_link || existing.other_link,
-      experience ?? existing.experience,
-      average_rating ?? existing.average_rating,
-      trimmedDescription,
-      processedSkills,
-      id,
+      experience !== undefined ? experience : existing.experience,
+      average_rating !== undefined ? average_rating : existing.average_rating,
+      description || existing.description,
+      skills || existing.skills,
+      uuid
     ];
 
     const result = await client.query(query, values);
 
     res.status(200).json({
       success: true,
-      message: "User updated successfully.",
+      message: 'User updated successfully.',
       updatedUser: result.rows[0],
     });
+
   } catch (error) {
     console.error("Error updating architect:", error);
     next(error);
   }
 };
+
+
+
 
 // const fetch_next_architech = async (req, res, next) => {
 //   try {
