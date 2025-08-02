@@ -1,20 +1,46 @@
 const { client } = require("../config/client");
 
 const createTicket = async (req, res) => {
-  const { subject, message, priority } = req.body;
-  const architectId = req.user.id; 
+  const { subject, message, priority, status, department } = req.body;
+
+  console.log(req.body,":::::::::::::::::::::::::::::::::::::::");
+  
+  const architectUuid = req.user?.uuid;
+  const architectEmail = req.user?.email;
+
+  if (!architectUuid) {
+    return res.status(400).json({ error: 'Architect UUID is required' });
+  }
+
+  if (!subject || !message) {
+    return res.status(400).json({ error: 'Subject and message are required' });
+  }
+
   try {
     const result = await client.query(
-      `INSERT INTO tickets (subject, message, priority, architech_id) 
-       VALUES ($1, $2, $3, $4) RETURNING *`,
-      [subject, message, priority || 'normal', architectId]
+      `INSERT INTO tickets 
+        (subject, message, priority, status, architech_uuid, architech_email, department)
+       VALUES 
+        ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING *`,
+      [
+        subject,
+        message,
+        priority || 'normal',
+        status || 'open',
+        architectUuid,
+        architectEmail,
+        department || null
+      ]
     );
+
     res.status(201).json({ ticket: result.rows[0] });
   } catch (err) {
-    console.error(err);
+    console.error('Failed to create ticket:', err);
     res.status(500).json({ error: 'Failed to create ticket' });
   }
 };
+
 
 const getTicketsForArchitect = async (req, res) => {
   const architectId = req.user.id;

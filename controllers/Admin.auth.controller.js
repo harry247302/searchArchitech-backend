@@ -74,8 +74,8 @@ const  admin_signUp = async (req, res) => {
 
 
 const admin_login = async (req, res, next) => {
+  console.log("thgfhfg");
   const { email, password_hash } = req.body;
-  console.log(req.body);
   if (!email || !password_hash) {
     return res.status(400).json({ message: 'Email and password are required' });
   }
@@ -103,7 +103,8 @@ const admin_login = async (req, res, next) => {
         email: admin.email,
         first_name: admin.first_name,
         last_name: admin.last_name,
-        designation: admin.designation,  // fixed typo here
+        designation: admin.designation,  // fixed typo here,
+        uuid:admin.uuid
       },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
@@ -142,9 +143,10 @@ const admin_login = async (req, res, next) => {
 
 
     res.cookie('token', token, {
-      httpOnly: true,                      
+      httpOnly: false,                      
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',                  
+      sameSite: 'Strict',           
+      path: '/' ,       
       maxAge: 24 * 60 * 60 * 1000            
     });
 
@@ -162,7 +164,7 @@ const admin_login = async (req, res, next) => {
   }
 };
 
- const blockArchitech = async (req,res,next)=>{
+const blockArchitech = async (req,res,next)=>{
     try {
       const {active_status,email} = req.body
       console.log(active_status,email,"***********************************");
@@ -185,10 +187,10 @@ const admin_login = async (req, res, next) => {
       console.log(error)
       res.status(500).send({success: false, message: 'Internal server error' })
     }
-  }
+}
 
 
-  const checkAuth = (req,res)=>{
+const checkAuth = (req,res)=>{
     const token = req.cookies.token;
     if (!token) return res.status(401).json({ message: "Not authenticated" });
   
@@ -198,5 +200,32 @@ const admin_login = async (req, res, next) => {
     } catch (err) {
       res.status(401).json({ message: "Invalid token" });
     }
+}
+
+const getAdminsDetails = async (req, res) => {
+  const { uuid } = req.user;
+  console.log(getAdminsDetails);
+  
+  if (!uuid) {
+    return res.status(400).json({ message: 'UUID is required' });
   }
-  module.exports = { admin_signUp,admin_login,blockArchitech ,checkAuth};
+
+  try {
+    const result = await client.query(
+      'SELECT uuid, id, email, first_name, last_name, profile_image, designation, phone_number, created_at FROM admin WHERE uuid = $1',
+      [uuid]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    res.status(200).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching admin by UUID:', error);
+    res.status(500).json({ message: 'Failed to retrieve admin data' });
+  }
+};
+
+
+module.exports = {getAdminsDetails, admin_signUp,admin_login,blockArchitech ,checkAuth};

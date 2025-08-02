@@ -4,7 +4,7 @@ const { createTicket, getTicketsForArchitect, getAllTickets, getTicketDetails, a
 const ticketRrouter = express.Router();
 
 
-ticketRrouter.post('/', protect, createTicket);
+ticketRrouter.post('/generate-ticket', protect, createTicket);
 ticketRrouter.get('/my-tickets', protect, getTicketsForArchitect);
 ticketRrouter.get('/', protect, getAllTickets);
 ticketRrouter.get('/:id', protect, getTicketDetails);
