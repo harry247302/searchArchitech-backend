@@ -5,7 +5,8 @@ const protect = asyncHandler(async(req,res,next)=>{
     let token;
 
     token = req?.cookies?.token || req?.cookies?.architectToken || req?.cookies?.visitorToken;
-    
+        // console.log(req?.cookies?.token,":::::::::::::::::::::::::::::::::::::::;");
+        
     if(!token){
         return res.status(403).json({message:"Token is required"});
     }

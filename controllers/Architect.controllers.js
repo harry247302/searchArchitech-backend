@@ -425,9 +425,10 @@ const dynamic_architech_data = async (req, res, next) => {
     const daysSinceEpoch = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
     const seed = (daysSinceEpoch - (daysSinceEpoch % 2)) % 10000; // Limit size
 
-    // Use the seed in the query
+    // Use the seed in the query and filter only active architects
     const query = `
       SELECT * FROM architech
+      WHERE active_status = 'true'
       ORDER BY md5(CONCAT($1::text, id::text));
     `;
 
@@ -443,6 +444,7 @@ const dynamic_architech_data = async (req, res, next) => {
     next(error);
   }
 };
+
 
 
 

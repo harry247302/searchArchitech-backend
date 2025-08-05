@@ -1,14 +1,15 @@
 const express = require('express');
 const { protect } = require('../middleware/Auth.middleware');
-const { createTicket, getTicketsForArchitect, getAllTickets, getTicketDetails, addReply, updateTicketStatus } = require('../controllers/Tickets.controller');
+const { createTicket, fetchTicketsOfArchitect, getAllTickets, getTicketDetails, addReply, updateTicketStatus, getArchitectTicketsWithReplies } = require('../controllers/Tickets.controller');
 const ticketRrouter = express.Router();
 
 
 ticketRrouter.post('/generate-ticket', protect, createTicket);
-ticketRrouter.get('/my-tickets', protect, getTicketsForArchitect);
-ticketRrouter.get('/', protect, getAllTickets);
+ticketRrouter.get('/my-tickets/uuid', protect, fetchTicketsOfArchitect);
+ticketRrouter.get('/FetchArchitectTicketsWithReplies/:uuid',getArchitectTicketsWithReplies)
+ticketRrouter.get('/all', getAllTickets);
 ticketRrouter.get('/:id', protect, getTicketDetails);
-ticketRrouter.post('/:id/replies', protect, addReply);
+ticketRrouter.post('/replies/:id', protect, addReply);
 ticketRrouter.patch('/:id/status', protect, updateTicketStatus);
 
 module.exports = ticketRrouter;

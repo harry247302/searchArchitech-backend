@@ -70,8 +70,8 @@ const create_project = async (req, res) => {
     }
     
 
-    console.log("Uploaded image URLs::::::::::::::::::::::::", imageUrls);
-    console.log("Uploaded video URLs::::::::::::::::::::::;:", videoUrls);
+    // console.log("Uploaded image URLs::::::::::::::::::::::::", imageUrls);
+    // console.log("Uploaded video URLs::::::::::::::::::::::;:", videoUrls);
 
     const result = await client.query(
       `INSERT INTO projects (
@@ -208,7 +208,7 @@ const delete_projects_by_architect = async (req, res) => {
       'DELETE FROM projects WHERE project_uuid = $1 RETURNING *',
       [project_uuid]
     );
-    console.log(result.rows,":::::::::::::::::::::::::::::::::::::::::::::::");
+    // console.log(result.rows,":::::::::::::::::::::::::::::::::::::::::::::::");
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'No projects found for this architect' });
