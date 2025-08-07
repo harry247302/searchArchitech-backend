@@ -23,9 +23,9 @@ const signup_visitor = async (req, res) => {
     const visitor = result.rows[0];
 
     const token = jwt.sign(
-      { id: visitor.id, email: visitor.email, fullname: visitor.fullname },
+      { visitoruuid:visitor?.visitoruuid, email: visitor.email},
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '7d' }
     );
 
       // Set token as HttpOnly cookie
@@ -33,22 +33,22 @@ const signup_visitor = async (req, res) => {
         httpOnly: false,
         secure: process.env.NODE_ENV === 'production', // use HTTPS in prod
         sameSite: 'Strict',
-          maxAge: 60 * 1000,  // 1 minute in milliseconds
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
       });
-      res.cookie('fullname', visitor.fullname, {
-        maxAge: 60 * 1000,
-        sameSite: 'Strict',
-      });
+      // res.cookie('fullname', visitor.fullname, {
+      //   maxAge: 60 * 1000,
+      //   sameSite: 'Strict',
+      // });
 
-      res.cookie('email', visitor.email, {
-        maxAge: 60 * 1000,
-        sameSite: 'Strict',
-      });
+      // res.cookie('email', visitor.email, {
+      //   maxAge: 60 * 1000,
+      //   sameSite: 'Strict',
+      // });
 
-      res.cookie('phone_number', visitor.phone_number, {
-        maxAge: 60 * 1000,
-        sameSite: 'Strict',
-      });
+      // res.cookie('phone_number', visitor.phone_number, {
+      //   maxAge: 60 * 1000,
+      //   sameSite: 'Strict',
+      // });
 
       res.status(201).json({
         message: 'Signup successful',
@@ -87,26 +87,26 @@ const login_visitor = async (req, res) => {
     const token = jwt.sign(
       { visitoruuid: visitor.visitoruuid, email: visitor.email },
       process.env.JWT_SECRET,
-      { expiresIn: '1d' }
+      { expiresIn: '7d' }
     );
-      res.cookie('fullname', visitor.fullname, {
-       maxAge: 60 * 1000,
-        sameSite: 'Strict',
-      });
+      // res.cookie('fullname', visitor.fullname, {
+      //  maxAge: 60 * 1000,
+      //   sameSite: 'Strict',
+      // });
        res.cookie('visitorToken', token, {
-        maxAge: 24 * 60 * 60 * 1000,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
         sameSite: 'Strict',
       });
 
-      res.cookie('email', visitor.email, {
-        maxAge: 24 * 60 * 60 * 1000,
-        sameSite: 'Strict',
-      });
+      // res.cookie('email', visitor.email, {
+      //   maxAge: 24 * 60 * 60 * 1000,
+      //   sameSite: 'Strict',
+      // });
 
-      res.cookie('visitorId', visitor.id, {
-        maxAge: 24 * 60 * 60 * 1000,
-        sameSite: 'Strict',
-      });
+      // res.cookie('visitorId', visitor.id, {
+      //   maxAge: 24 * 60 * 60 * 1000,
+      //   sameSite: 'Strict',
+      // });
 
     
     res.status(200).json({

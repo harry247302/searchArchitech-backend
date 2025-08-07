@@ -153,48 +153,43 @@ const getTicketDetails = async (req, res) => {
 };
 
 const addReply = async (req, res) => {
-  const ticketId = req.params.id; // This should be a UUID
-  const { message,sender_role,sender_id } = req.body;
-  const user = req.user; // { id, role }
-  console.log(req.body,">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-  
+  const ticketId = req.params.id; // UUID from URL
+  const { message, sender_role: rawSenderRole, sender_id } = req.body;
+
+  // Normalize sender_role to allowed DB values
+  let sender_role = rawSenderRole?.toLowerCase() || "";
+
+  if (sender_role === "super admin" || sender_role === "hr") {
+    sender_role = "admin";
+  }
+
   try {
-   
     const ticketResult = await client.query(
       `SELECT * FROM tickets WHERE uuid = $1`,
       [ticketId]
     );
 
     if (ticketResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Ticket not found' });
+      return res.status(404).json({ error: "Ticket not found" });
     }
 
-    const ticket = ticketResult.rows[0];
-
-    // ✅ 2. Restrict architects to only their own tickets
-    if (user.role === 'architech' && ticket.architech_id !== user.id) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    // ✅ 3. Insert the reply
+    // Insert the reply
     const insertResult = await client.query(
       `INSERT INTO ticket_replies (ticket_id, sender_role, sender_id, message) 
        VALUES ($1, $2, $3, $4) RETURNING *`,
       [ticketId, sender_role, sender_id, message]
     );
 
-    // ✅ 4. Update ticket's updated_at timestamp
+    // Update ticket's updated_at timestamp
     await client.query(
-      `UPDATE tickets SET updated_at = CURRENT_TIMESTAMP WHERE ticket_id = $1`,
+      `UPDATE tickets SET updated_at = CURRENT_TIMESTAMP WHERE uuid = $1`,
       [ticketId]
     );
 
-    // ✅ 5. Return the inserted reply
     res.status(201).json({ reply: insertResult.rows[0] });
-
   } catch (err) {
-    console.error('Add Reply Error:', err);
-    res.status(500).json({ error: 'Failed to add reply' });
+    console.error("Add Reply Error:", err);
+    res.status(500).json({ error: "Failed to add reply" });
   }
 };
 

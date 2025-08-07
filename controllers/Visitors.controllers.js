@@ -14,7 +14,7 @@ const getAllVisitors = async (req, res) => {
 
 const getVisitorById = async (req, res) => {
   const id = req.user.visitoruuid;
-  // console.log(req.user, "-------------------------------");
+  console.log(req.user, "-------------------------------");
 
   try {
     const result = await client.query(
