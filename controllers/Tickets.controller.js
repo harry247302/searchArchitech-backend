@@ -1,6 +1,7 @@
 const { client } = require("../config/client");
 const generateUniqueTicketId = async () => {
-  const generateId = () => Math.floor(100000 + Math.random() * 900000).toString(); // Always 6-digit
+  const generateId = () =>
+    Math.floor(100000 + Math.random() * 900000).toString(); // Always 6-digit
 
   let newId;
   let isUnique = false;
@@ -9,7 +10,7 @@ const generateUniqueTicketId = async () => {
     newId = generateId();
 
     const existing = await client.query(
-      'SELECT 1 FROM tickets WHERE ticket_id = $1 LIMIT 1',
+      "SELECT 1 FROM tickets WHERE ticket_id = $1 LIMIT 1",
       [newId]
     );
 
@@ -30,11 +31,11 @@ const createTicket = async (req, res) => {
   const architectEmail = req.user?.email;
 
   if (!architectUuid) {
-    return res.status(400).json({ error: 'Architect UUID is required' });
+    return res.status(400).json({ error: "Architect UUID is required" });
   }
 
   if (!subject || !message) {
-    return res.status(400).json({ error: 'Subject and message are required' });
+    return res.status(400).json({ error: "Subject and message are required" });
   }
 
   try {
@@ -50,37 +51,84 @@ const createTicket = async (req, res) => {
         ticketId,
         subject,
         message,
-        priority || 'normal',
-        status || 'open',
+        priority || "normal",
+        status || "open",
         architectUuid,
         architectEmail,
-        department || null
+        department || null,
       ]
     );
 
     res.status(201).json({ ticket: result.rows[0] });
   } catch (err) {
-    console.error('Failed to create ticket:', err);
-    res.status(500).json({ error: 'Failed to create ticket' });
+    console.error("Failed to create ticket:", err);
+    res.status(500).json({ error: "Failed to create ticket" });
   }
 };
-
-
 
 const fetchTicketsOfArchitect = async (req, res) => {
-  const architectId = req.params.id;
+  // const architectId = req.user.uuid;
+  const uuid = req.user.uuid;
+  console.log(uuid, "********************************************");
+
   try {
     const result = await client.query(
-      `SELECT * FROM tickets WHERE architech_id = $1 ORDER BY created_at DESC`,
-      [architectId]
+      `
+      SELECT 
+        a.uuid,
+        a.first_name,
+        a.last_name,
+        a.email,
+        a.phone_number,
+        a.city,
+        a.state_name,
+        a.company_name,
+        a.experience,
+        a.average_rating,
+        a.profile_url,
+        a.category,
+        COALESCE(json_agg(
+          json_build_object(
+            'ticket_id', t.ticket_id,
+            'subject', t.subject,
+            'message', t.message,
+            'status', t.status,
+            'priority', t.priority,
+            'department', t.department,
+            'created_at', t.created_at,
+            'uuid',t.uuid,
+            'replies', (
+              SELECT COALESCE(json_agg(
+                json_build_object(
+                  'id', tr.id,
+                  'message', tr.message,
+                  'sender_role', tr.sender_role,
+                  'created_at', tr.created_at
+                )
+              ), '[]'::json)
+              FROM ticket_replies tr
+              WHERE tr.ticket_id = t.uuid
+            )
+          )
+        ) FILTER (WHERE t.uuid IS NOT NULL), '[]'::json) AS tickets
+      FROM architech a
+      LEFT JOIN tickets t ON a.uuid = t.architech_uuid
+      WHERE a.uuid = $1
+      GROUP BY a.uuid, a.first_name, a.last_name, a.email, a.phone_number, a.city, a.state_name, a.company_name, a.experience, a.average_rating, a.profile_url, a.category
+    `,
+      [uuid]
     );
-    res.json({ tickets: result.rows });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch tickets' });
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Architect not found" });
+    }
+
+    return res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error fetching architect tickets:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
-
 
 const getAllTickets = async (req, res) => {
   try {
@@ -91,10 +139,10 @@ const getAllTickets = async (req, res) => {
     const tickets = ticketsResult.rows;
 
     // Step 2: Get unique architect UUIDs
-    const uuids = [...new Set(tickets.map(t => t.architech_uuid))];
+    const uuids = [...new Set(tickets.map((t) => t.architech_uuid))];
 
     if (uuids.length === 0) {
-      return res.json({ tickets });
+      return res.json({ tickets: [] });
     }
 
     // Step 3: Fetch all relevant architects
@@ -105,40 +153,49 @@ const getAllTickets = async (req, res) => {
 
     // Step 4: Create a lookup map for quick access
     const architectMap = {};
-    architechResult.rows.forEach(arch => {
+    architechResult.rows.forEach((arch) => {
       architectMap[arch.uuid] = arch;
     });
 
-    // Step 5: Combine architect data into ticket (like populate)
-    const enrichedTickets = tickets.map(ticket => ({
+    // Step 5: Combine architect data into each ticket
+    const enrichedTickets = tickets.map((ticket) => ({
       ...ticket,
       architect_details: architectMap[ticket.architech_uuid] || null,
     }));
 
-    res.json({ tickets: enrichedTickets });
+    // Step 6: Deduplicate by email — keep only first ticket per email
+    const seenEmails = new Set();
+    const uniqueTickets = enrichedTickets.filter((ticket) => {
+      const email = ticket.architech_email;
+      if (seenEmails.has(email)) return false;
+      seenEmails.add(email);
+      return true;
+    });
+
+    res.json({ tickets: uniqueTickets });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to fetch tickets' });
+    res.status(500).json({ error: "Failed to fetch tickets" });
   }
 };
 
-
 const getTicketDetails = async (req, res) => {
   const ticketId = req.params.id;
-  const user = req.user; 
+  const user = req.user;
 
   try {
-  
-    const ticketResult = await client.query(`SELECT * FROM tickets WHERE id = $1`, [ticketId]);
+    const ticketResult = await client.query(
+      `SELECT * FROM tickets WHERE id = $1`,
+      [ticketId]
+    );
     if (ticketResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Ticket not found' });
+      return res.status(404).json({ error: "Ticket not found" });
     }
     const ticket = ticketResult.rows[0];
 
-    if (user.role === 'architech' && ticket.architech_id !== user.id) {
-      return res.status(403).json({ error: 'Access denied' });
+    if (user.role === "architech" && ticket.architech_id !== user.id) {
+      return res.status(403).json({ error: "Access denied" });
     }
-
 
     const repliesResult = await client.query(
       `SELECT * FROM ticket_replies WHERE ticket_id = $1 ORDER BY created_at ASC`,
@@ -148,7 +205,7 @@ const getTicketDetails = async (req, res) => {
     res.json({ ticket, replies: repliesResult.rows });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to fetch ticket details' });
+    res.status(500).json({ error: "Failed to fetch ticket details" });
   }
 };
 
@@ -193,13 +250,13 @@ const addReply = async (req, res) => {
   }
 };
 
-
 const getArchitectTicketsWithReplies = async (req, res) => {
   const { uuid } = req.params;
   console.log(uuid, "********************************************");
 
   try {
-    const result = await client.query(`
+    const result = await client.query(
+      `
       SELECT 
         a.uuid,
         a.first_name,
@@ -241,27 +298,26 @@ const getArchitectTicketsWithReplies = async (req, res) => {
       LEFT JOIN tickets t ON a.uuid = t.architech_uuid
       WHERE a.uuid = $1
       GROUP BY a.uuid, a.first_name, a.last_name, a.email, a.phone_number, a.city, a.state_name, a.company_name, a.experience, a.average_rating, a.profile_url, a.category
-    `, [uuid]);
+    `,
+      [uuid]
+    );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Architect not found' });
+      return res.status(404).json({ error: "Architect not found" });
     }
 
     return res.json(result.rows[0]);
   } catch (error) {
-    console.error('Error fetching architect tickets:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching architect tickets:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
-
-
-
-"360437"
+// ("360437");
 
 const updateTicketStatus = async (req, res) => {
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ error: 'Access denied' });
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ error: "Access denied" });
   }
 
   const ticketId = req.params.id;
@@ -273,12 +329,12 @@ const updateTicketStatus = async (req, res) => {
       [status, ticketId]
     );
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Ticket not found' });
+      return res.status(404).json({ error: "Ticket not found" });
     }
     res.json({ ticket: result.rows[0] });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to update ticket status' });
+    res.status(500).json({ error: "Failed to update ticket status" });
   }
 };
 
