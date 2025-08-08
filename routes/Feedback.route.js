@@ -1,10 +1,12 @@
-const express = require('express');
-const { submitFeedback, getFeedbackByArchitect } = require('../controllers/Feedback.controller');
-const feedback_router = express.Router()
+const express = require("express");
+const {
+  submitFeedback,
+  getFeedbackByArchitect,
+} = require("../controllers/Feedback.controller");
+const { protect } = require("../middleware/Auth.middleware");
+const feedback_router = express.Router();
 
+feedback_router.post("/submit", submitFeedback);
+feedback_router.get("/getFeedback", protect, getFeedbackByArchitect);
 
-feedback_router.post('/submit', submitFeedback);
-feedback_router.get('/get-feedback/:architectId', getFeedbackByArchitect);
-
-
-module.exports = feedback_router
+module.exports = feedback_router;
